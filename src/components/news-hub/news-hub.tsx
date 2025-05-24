@@ -237,40 +237,42 @@ export function NewsHub() {
                                     )}
 
                                     {/* Load More Button */}
-                                    {/* {hasMoreArticles && (
-                                        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                                            <div className="text-center space-y-6">
-                                                <Button
-                                                    onClick={handleLoadMore}
-                                                    size="lg"
-                                                    disabled={isLoading}
-                                                    className={cn(
-                                                        "px-8 py-3 rounded-xl font-medium w-full max-w-sm",
-                                                        "bg-gradient-to-r from-primary to-accent text-primary-foreground",
-                                                        "hover:scale-105 transition-all duration-300",
-                                                        "shadow-glow hover:shadow-neon",
-                                                        "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
-                                                    )}
-                                                >
-                                                    {isLoading ? (
-                                                        <>
-                                                            <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                                                            Loading...
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <TrendingUp className="w-4 h-4 mr-2" />
-                                                            Load More Articles
-                                                        </>
-                                                    )}
-                                                </Button>
+                                    <div>
+                                            {hasMoreArticles && (
+                                                <div className=" max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                                                    <div className="text-center space-y-6">
+                                                        <Button
+                                                            onClick={handleLoadMore}
+                                                            size="lg"
+                                                            disabled={isLoading}
+                                                            className={cn(
+                                                                "px-8 py-3 rounded-xl font-medium w-full max-w-sm",
+                                                                "bg-gradient-to-r from-primary to-accent text-primary-foreground",
+                                                                "hover:scale-105 transition-all duration-300",
+                                                                "shadow-glow hover:shadow-neon",
+                                                                "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                                            )}
+                                                        >
+                                                            {isLoading ? (
+                                                                <>
+                                                                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                                                                    Loading...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <TrendingUp className="w-4 h-4 mr-2" />
+                                                                    Load More Articles
+                                                                </>
+                                                            )}
+                                                        </Button>
 
-                                                <p className="text-xs text-muted-foreground mt-4">
-                                                    Showing {visibleArticles.length} of {filteredArticles.length} articles
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )} */}
+                                                        <p className="text-xs text-muted-foreground mt-4">
+                                                            Showing {visibleArticles.length} of {filteredArticles.length} articles
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                    </div>
                                 </>
                             )}
                         </div>
