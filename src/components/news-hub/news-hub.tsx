@@ -241,7 +241,7 @@ export function NewsHub() {
                             )}
                             {/* Load More Button */}
                             {hasMoreArticles && (
-                                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 -mt-12 relative z-10">
                                     <div className="text-center space-y-6">
                                         <Button
                                             onClick={handleLoadMore}
@@ -249,7 +249,7 @@ export function NewsHub() {
                                             className={cn(
                                                 "px-8 py-3 rounded-xl font-medium w-full max-w-sm",
                                                 "bg-gradient-to-r from-primary to-accent text-primary-foreground",
-                                                "hover:scale-105 transition-all duration-300",
+                                                "hover:scale-101 transition-all duration-300",
                                                 "shadow-glow hover:shadow-neon"
                                             )}
                                         >
