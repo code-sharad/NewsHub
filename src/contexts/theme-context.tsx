@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useRef, useMemo } from 'react'
 
-type Theme = 'light' | 'dark' | 'neon' | 'cyberpunk' | 'retro' | 'nature' | 'ocean' | 'sunset' | 'aurora' | 'monochrome' | 'coffee' | 'forest' | 'system'
+type Theme = 'light' | 'nature' | 'ocean' | 'sunset' | 'monochrome' | 'coffee' | 'dark-oled' | 'dark-formal' | 'system'
 
 interface ThemeContextType {
     theme: Theme
@@ -30,34 +30,6 @@ const AVAILABLE_THEMES = [
         gradient: 'from-white to-gray-100'
     },
     {
-        value: 'dark' as Theme,
-        label: 'Midnight',
-        description: 'Rich, dark, and modern',
-        preview: 'bg-gradient-to-br from-gray-900 to-black',
-        gradient: 'from-gray-900 to-black'
-    },
-    {
-        value: 'neon' as Theme,
-        label: 'Neon Nights',
-        description: 'Electric blues and vibrant purples',
-        preview: 'bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-400',
-        gradient: 'from-purple-600 via-blue-600 to-cyan-400'
-    },
-    {
-        value: 'cyberpunk' as Theme,
-        label: 'Cyberpunk',
-        description: 'Futuristic with neon accents',
-        preview: 'bg-gradient-to-br from-pink-500 via-purple-600 to-yellow-400',
-        gradient: 'from-pink-500 via-purple-600 to-yellow-400'
-    },
-    {
-        value: 'retro' as Theme,
-        label: 'Retro Wave',
-        description: '80s inspired synthwave vibes',
-        preview: 'bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600',
-        gradient: 'from-orange-400 via-pink-500 to-purple-600'
-    },
-    {
         value: 'nature' as Theme,
         label: 'Nature',
         description: 'Earth tones and organic feel',
@@ -79,13 +51,6 @@ const AVAILABLE_THEMES = [
         gradient: 'from-yellow-400 via-orange-500 to-red-500'
     },
     {
-        value: 'aurora' as Theme,
-        label: 'Aurora Borealis',
-        description: 'Mystical greens and purples',
-        preview: 'bg-gradient-to-br from-green-400 via-purple-500 to-blue-600',
-        gradient: 'from-green-400 via-purple-500 to-blue-600'
-    },
-    {
         value: 'monochrome' as Theme,
         label: 'Monochrome',
         description: 'Classic black and white',
@@ -100,11 +65,18 @@ const AVAILABLE_THEMES = [
         gradient: 'from-amber-200 via-orange-300 to-brown-500'
     },
     {
-        value: 'forest' as Theme,
-        label: 'Deep Forest',
-        description: 'Rich greens and earth tones',
-        preview: 'bg-gradient-to-br from-green-800 via-green-600 to-emerald-400',
-        gradient: 'from-green-800 via-green-600 to-emerald-400'
+        value: 'dark-oled' as Theme,
+        label: 'OLED Dark',
+        description: 'Pure black for OLED displays',
+        preview: 'bg-gradient-to-br from-black via-gray-900 to-blue-900',
+        gradient: 'from-black via-gray-900 to-blue-900'
+    },
+    {
+        value: 'dark-formal' as Theme,
+        label: 'Formal Dark',
+        description: 'Professional stone theme',
+        preview: 'bg-gradient-to-br from-stone-800 via-stone-700 to-amber-600',
+        gradient: 'from-stone-800 via-stone-700 to-amber-600'
     },
     {
         value: 'system' as Theme,
@@ -125,9 +97,9 @@ const getStoredTheme = (): Theme => {
     }
 }
 
-const getSystemTheme = (): 'light' | 'dark' => {
-    if (typeof window === 'undefined') return 'light'
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+const getSystemTheme = (): 'light' => {
+    // Since we removed dark theme, always return light for system preference
+    return 'light'
 }
 
 const setStoredTheme = (theme: Theme): void => {
@@ -148,19 +120,18 @@ const applyThemeToDOM = (theme: Theme): void => {
         root.classList.add('theme-transitioning')
 
         // Remove all theme classes
-        const themeClasses = ['light', 'dark', 'neon', 'cyberpunk', 'retro', 'nature']
+        const themeClasses = ['light', 'nature', 'ocean', 'sunset', 'monochrome', 'coffee', 'dark-oled', 'dark-formal']
         themeClasses.forEach(cls => root.classList.remove(cls))
 
         // Apply new theme
         root.setAttribute('data-theme', theme)
-        root.classList.add(theme)
+        if (theme !== 'system') {
+            root.classList.add(theme)
+        }
 
         // Set color scheme for browser elements
-        if (theme === 'dark' || theme === 'cyberpunk' || theme === 'neon') {
-            root.style.colorScheme = 'dark'
-        } else {
-            root.style.colorScheme = 'light'
-        }
+        const isDarkTheme = theme === 'dark-oled' || theme === 'dark-formal'
+        root.style.colorScheme = isDarkTheme ? 'dark' : 'light'
 
         // Remove transition class after animation
         setTimeout(() => {
@@ -243,7 +214,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
                     const handleSystemThemeChange = (e: MediaQueryListEvent) => {
                         if (theme === 'system') {
-                            const newTheme = e.matches ? 'dark' : 'light'
+                            // Since we removed dark theme, always use light
+                            const newTheme = 'light'
                             debouncedApplyTheme(newTheme)
                         }
                     }
@@ -288,7 +260,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
                 const handleSystemThemeChange = (e: MediaQueryListEvent) => {
                     if (theme === 'system') {
-                        const newTheme = e.matches ? 'dark' : 'light'
+                        // Since we removed dark theme, always use light
+                        const newTheme = 'light'
                         debouncedApplyTheme(newTheme)
                     }
                 }

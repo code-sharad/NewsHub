@@ -32,17 +32,13 @@ import { cn } from '@/lib/utils'
 
 const themeIcons = {
     light: Sun,
-    dark: Moon,
-    neon: Zap,
-    cyberpunk: Cpu,
-    retro: Radio,
     nature: Leaf,
     ocean: Waves,
     sunset: Sunrise,
-    aurora: Eye,
     monochrome: Monitor,
     coffee: Coffee,
-    forest: Trees,
+    'dark-oled': Moon,
+    'dark-formal': Eye,
     system: Monitor,
 }
 
@@ -189,8 +185,11 @@ export function ThemeSwitcher() {
 // Compact version for mobile
 export function ThemeSwitcherCompact() {
     const { theme, setTheme, availableThemes } = useTheme()
+
+    // Ensure we have a valid index with fallback to 0
+    const initialIndex = availableThemes.findIndex(t => t.value === theme)
     const [currentIndex, setCurrentIndex] = useState(
-        availableThemes.findIndex(t => t.value === theme)
+        initialIndex >= 0 ? initialIndex : 0
     )
 
     const handleNext = () => {
@@ -199,8 +198,9 @@ export function ThemeSwitcherCompact() {
         setTheme(availableThemes[nextIndex].value)
     }
 
-    const currentTheme = availableThemes[currentIndex]
-    const CurrentIcon = themeIcons[currentTheme.value] || Palette
+    // Ensure we have a valid theme with fallback
+    const currentTheme = availableThemes[currentIndex] || availableThemes[0]
+    const CurrentIcon = themeIcons[currentTheme?.value] || Palette
 
     return (
         <Button
@@ -219,7 +219,7 @@ export function ThemeSwitcherCompact() {
             <div className={cn(
                 "absolute -bottom-1 left-1/2 transform -translate-x-1/2",
                 "h-1 w-4 rounded-full bg-gradient-to-r transition-all duration-300",
-                currentTheme.gradient
+                currentTheme?.gradient || "from-primary to-accent"
             )} />
         </Button>
     )
@@ -229,17 +229,11 @@ export function ThemeSwitcherCompact() {
 export function ThemePreview({ themeValue }: { themeValue: string }) {
     const themeData = {
         light: { bg: 'bg-white', border: 'border-gray-200', text: 'text-gray-900' },
-        dark: { bg: 'bg-gray-900', border: 'border-gray-700', text: 'text-gray-100' },
-        neon: { bg: 'bg-purple-900', border: 'border-purple-500', text: 'text-purple-100' },
-        cyberpunk: { bg: 'bg-pink-900', border: 'border-pink-500', text: 'text-pink-100' },
-        retro: { bg: 'bg-orange-900', border: 'border-orange-500', text: 'text-orange-100' },
         nature: { bg: 'bg-green-100', border: 'border-green-500', text: 'text-green-900' },
         ocean: { bg: 'bg-blue-900', border: 'border-blue-500', text: 'text-blue-100' },
         sunset: { bg: 'bg-orange-100', border: 'border-orange-500', text: 'text-orange-900' },
-        aurora: { bg: 'bg-green-900', border: 'border-green-500', text: 'text-green-100' },
         monochrome: { bg: 'bg-gray-100', border: 'border-gray-500', text: 'text-gray-900' },
         coffee: { bg: 'bg-amber-100', border: 'border-amber-500', text: 'text-amber-900' },
-        forest: { bg: 'bg-green-900', border: 'border-green-500', text: 'text-green-100' },
     }
 
     const theme = themeData[themeValue as keyof typeof themeData] || themeData.light
