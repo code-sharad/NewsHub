@@ -248,7 +248,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
                 clearTimeout(timeoutRef.current)
             }
         }
-    }, [])
+    }, [debouncedApplyTheme, resolveTheme, theme])
 
     // Update system theme listener
     useEffect(() => {

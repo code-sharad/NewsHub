@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow, format } from 'date-fns'
 import {
     BookmarkIcon,
     Trash2,
@@ -12,7 +12,21 @@ import {
     Clock,
     Search,
     Filter,
-    Sparkles
+    Sparkles,
+    Grid3X3,
+    List,
+    Calendar,
+    SortAsc,
+    SortDesc,
+    MoreHorizontal,
+    Share2,
+    Edit3,
+    Archive,
+    Star,
+    Bookmark,
+    Eye,
+    ChevronDown,
+    X
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -20,7 +34,17 @@ import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Input } from '@/components/ui/input'
 import { useToast } from '@/hooks/use-toast'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator,
+    DropdownMenuLabel
+} from '@/components/ui/dropdown-menu'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Image from 'next/image'
+import { cn } from '@/lib/utils'
 
 interface Bookmark {
     id: string
@@ -33,6 +57,10 @@ interface Bookmark {
     tags?: string
 }
 
+type ViewMode = 'grid' | 'list'
+type SortBy = 'date' | 'title' | 'publisher'
+type SortOrder = 'asc' | 'desc'
+
 export default function BookmarksPage() {
     const { data: session, status } = useSession()
     const { toast } = useToast()
@@ -42,6 +70,10 @@ export default function BookmarksPage() {
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
     const [deletingBookmarks, setDeletingBookmarks] = useState<Set<string>>(new Set())
+    const [viewMode, setViewMode] = useState<ViewMode>('grid')
+    const [sortBy, setSortBy] = useState<SortBy>('date')
+    const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
+    const [selectedPublisher, setSelectedPublisher] = useState<string>('')
 
     const fetchBookmarks = useCallback(async () => {
         try {
@@ -76,6 +108,50 @@ export default function BookmarksPage() {
 
         fetchBookmarks()
     }, [session, status, router, fetchBookmarks])
+
+    // Get unique publishers for filtering
+    const publishers = useMemo(() => {
+        const publisherSet = new Set(
+            bookmarks
+                .map(b => b.publisher)
+                .filter((publisher): publisher is string => Boolean(publisher))
+        )
+        return Array.from(publisherSet).sort()
+    }, [bookmarks])
+
+    // Filter and sort bookmarks
+    const filteredAndSortedBookmarks = useMemo(() => {
+        const filtered = bookmarks.filter(bookmark => {
+            const matchesSearch = bookmark.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                bookmark.publisher?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                bookmark.description?.toLowerCase().includes(searchQuery.toLowerCase())
+
+            const matchesPublisher = !selectedPublisher || bookmark.publisher === selectedPublisher
+
+            return matchesSearch && matchesPublisher
+        })
+
+        // Sort bookmarks
+        filtered.sort((a, b) => {
+            let comparison = 0
+
+            switch (sortBy) {
+                case 'date':
+                    comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                    break
+                case 'title':
+                    comparison = a.title.localeCompare(b.title)
+                    break
+                case 'publisher':
+                    comparison = (a.publisher || '').localeCompare(b.publisher || '')
+                    break
+            }
+
+            return sortOrder === 'asc' ? comparison : -comparison
+        })
+
+        return filtered
+    }, [bookmarks, searchQuery, selectedPublisher, sortBy, sortOrder])
 
     const handleDeleteBookmark = async (bookmarkId: string) => {
         setDeletingBookmarks(prev => new Set([...prev, bookmarkId]))
@@ -129,23 +205,41 @@ export default function BookmarksPage() {
         router.push(`/article?${params.toString()}`)
     }
 
-    const filteredBookmarks = bookmarks.filter(bookmark =>
-        bookmark.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        bookmark.publisher?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    const handleShareBookmark = async (bookmark: Bookmark) => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: bookmark.title,
+                    text: bookmark.description,
+                    url: bookmark.articleUrl,
+                })
+            } catch (err) {
+                console.error('Error sharing:', err)
+            }
+        } else {
+            // Fallback - copy to clipboard
+            navigator.clipboard.writeText(bookmark.articleUrl)
+            toast({
+                title: "Copied",
+                description: "Article URL copied to clipboard.",
+            })
+        }
+    }
+
+    const clearFilters = () => {
+        setSearchQuery('')
+        setSelectedPublisher('')
+    }
 
     if (status === 'loading' || loading) {
         return (
-            <div className="min-h-screen relative">
-                {/* Dynamic themed background */}
-                <div className="fixed inset-0" style={{ background: 'var(--raycast-bg)' }} />
-
-                <div className="relative flex items-center justify-center h-screen">
-                    <div className="text-center raycast-glass-lg p-12 rounded-3xl raycast-fade-in">
-                        <div className="w-16 h-16 raycast-btn rounded-3xl flex items-center justify-center mx-auto mb-6 animate-pulse">
-                            <BookmarkIcon className="w-8 h-8 text-white" />
+            <div className="min-h-screen bg-background">
+                <div className="flex items-center justify-center h-screen">
+                    <div className="text-center glass-card p-12 max-w-md">
+                        <div className="w-16 h-16 bg-gradient-to-r from-primary to-accent rounded-3xl flex items-center justify-center mx-auto mb-6 animate-pulse">
+                            <BookmarkIcon className="w-8 h-8 text-primary-foreground" />
                         </div>
-                        <div className="raycast-shimmer h-2 w-32 mx-auto rounded-full mb-4" style={{ background: 'hsl(var(--primary) / 0.2)' }}></div>
+                        <div className="h-2 w-32 bg-primary/20 mx-auto rounded-full mb-4 animate-pulse"></div>
                         <p className="text-muted-foreground">Loading your saved articles...</p>
                     </div>
                 </div>
@@ -158,76 +252,194 @@ export default function BookmarksPage() {
     }
 
     return (
-        <div className="min-h-screen relative">
-            {/* Dynamic themed background */}
-            <div className="fixed inset-0" style={{ background: 'var(--raycast-bg)' }} />
-            <div className="fixed inset-0 bg-grid-small-black/[0.02] dark:bg-grid-small-white/[0.02] pointer-events-none" />
-            <div className="fixed inset-0 pointer-events-none" style={{ background: 'linear-gradient(45deg, hsl(var(--primary) / 0.05) 0%, transparent 25%, transparent 75%, hsl(var(--accent) / 0.05) 100%)' }} />
-
+        <div className="min-h-screen bg-background">
             {/* Header */}
-            <div className="relative z-10 raycast-glass-lg border-b border-primary/10 px-4 py-6 sticky top-0 backdrop-blur-xl">
-                <div className="max-w-6xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center space-x-6">
-                        <Button
-                            variant="ghost"
-                            onClick={() => router.back()}
-                            className="flex items-center raycast-glass hover:bg-primary/10 transition-all duration-300 rounded-xl px-4 py-2 h-11"
-                        >
-                            <ArrowLeft className="w-4 h-4 mr-2 text-primary" />
-                            <span className="font-medium">Back</span>
-                        </Button>
-                        <div className="flex items-center space-x-4">
-                            <div className="w-12 h-12 raycast-btn rounded-2xl flex items-center justify-center shadow-lg">
-                                <BookmarkIcon className="w-6 h-6 text-white" />
+            <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border/50">
+                <div className="container mx-auto px-4 py-4">
+                    <div className="flex items-center justify-between gap-4">
+                        {/* Left section */}
+                        <div className="flex items-center gap-4">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => router.back()}
+                                className="rounded-xl"
+                            >
+                                <ArrowLeft className="w-4 h-4" />
+                            </Button>
+
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gradient-to-r from-primary to-accent rounded-xl flex items-center justify-center">
+                                    <BookmarkIcon className="w-5 h-5 text-primary-foreground" />
+                                </div>
+                                <div>
+                                    <h1 className="text-xl font-bold">My Bookmarks</h1>
+                                    <p className="text-sm text-muted-foreground">
+                                        {bookmarks.length} saved articles
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <h1 className="text-2xl font-bold font-poppins raycast-gradient-text">
-                                    My Bookmarks
-                                </h1>
-                                <p className="text-sm text-muted-foreground">
-                                    Your curated collection
-                                </p>
+                        </div>
+
+                        {/* Right section */}
+                        <div className="flex items-center gap-3">
+                            {/* Search */}
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search bookmarks..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-10 w-64 bg-muted/50"
+                                />
+                                {searchQuery && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setSearchQuery('')}
+                                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </Button>
+                                )}
                             </div>
-                            <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30 px-3 py-1 rounded-lg font-semibold">
-                                {bookmarks.length}
-                            </Badge>
+
+                            {/* Filters */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="icon" className="relative">
+                                        <Filter className="w-4 h-4" />
+                                        {selectedPublisher && (
+                                            <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
+                                        )}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56">
+                                    <DropdownMenuLabel>Filter by Publisher</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => setSelectedPublisher('')}>
+                                        <span className={selectedPublisher === '' ? 'font-medium' : ''}>
+                                            All Publishers
+                                        </span>
+                                    </DropdownMenuItem>
+                                    {publishers.map(publisher => (
+                                        <DropdownMenuItem
+                                            key={publisher}
+                                            onClick={() => setSelectedPublisher(publisher)}
+                                        >
+                                            <span className={selectedPublisher === publisher ? 'font-medium' : ''}>
+                                                {publisher}
+                                            </span>
+                                        </DropdownMenuItem>
+                                    ))}
+                                    {(searchQuery || selectedPublisher) && (
+                                        <>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem onClick={clearFilters}>
+                                                <X className="w-4 h-4 mr-2" />
+                                                Clear Filters
+                                            </DropdownMenuItem>
+                                        </>
+                                    )}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            {/* Sort */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="icon">
+                                        {sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Sort By</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => setSortBy('date')}>
+                                        <Calendar className="w-4 h-4 mr-2" />
+                                        <span className={sortBy === 'date' ? 'font-medium' : ''}>Date</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setSortBy('title')}>
+                                        <Edit3 className="w-4 h-4 mr-2" />
+                                        <span className={sortBy === 'title' ? 'font-medium' : ''}>Title</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setSortBy('publisher')}>
+                                        <Archive className="w-4 h-4 mr-2" />
+                                        <span className={sortBy === 'publisher' ? 'font-medium' : ''}>Publisher</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
+                                        {sortOrder === 'asc' ? <SortDesc className="w-4 h-4 mr-2" /> : <SortAsc className="w-4 h-4 mr-2" />}
+                                        {sortOrder === 'asc' ? 'Descending' : 'Ascending'}
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            {/* View Mode */}
+                            <div className="flex border rounded-lg">
+                                <Button
+                                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => setViewMode('grid')}
+                                    className="rounded-r-none"
+                                >
+                                    <Grid3X3 className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                                    size="sm"
+                                    onClick={() => setViewMode('list')}
+                                    className="rounded-l-none"
+                                >
+                                    <List className="w-4 h-4" />
+                                </Button>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center space-x-4">
-                        <div className="relative">
-                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-primary/60 w-4 h-4" />
-                            <Input
-                                placeholder="Search bookmarks..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-12 w-64 raycast-glass border-primary/20 bg-background/60 backdrop-blur-sm placeholder:text-muted-foreground/60 raycast-focus transition-all duration-300 rounded-xl h-11 hover:bg-background/80 focus:bg-background/90"
-                            />
+                    {/* Active filters */}
+                    {(searchQuery || selectedPublisher) && (
+                        <div className="flex items-center gap-2 mt-4">
+                            <span className="text-sm text-muted-foreground">Active filters:</span>
+                            {searchQuery && (
+                                <Badge variant="secondary" className="gap-1">
+                                    Search: {searchQuery}
+                                    <X className="w-3 h-3 cursor-pointer" onClick={() => setSearchQuery('')} />
+                                </Badge>
+                            )}
+                            {selectedPublisher && (
+                                <Badge variant="secondary" className="gap-1">
+                                    Publisher: {selectedPublisher}
+                                    <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedPublisher('')} />
+                                </Badge>
+                            )}
+                            <Button variant="ghost" size="sm" onClick={clearFilters}>
+                                Clear all
+                            </Button>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
 
             {/* Content */}
-            <div className="relative z-10 max-w-6xl mx-auto px-4 py-8">
-                {filteredBookmarks.length === 0 ? (
-                    <div className="flex items-center justify-center h-96">
-                        <div className="text-center raycast-glass-lg p-12 rounded-3xl raycast-fade-in">
-                            <div className="w-20 h-20 raycast-btn rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-lg">
-                                <BookmarkIcon className="w-10 h-10 text-white" />
+            <div className="container mx-auto px-4 py-6">
+                {filteredAndSortedBookmarks.length === 0 ? (
+                    <div className="flex items-center justify-center min-h-[60vh]">
+                        <div className="text-center glass-card p-12 max-w-md">
+                            <div className="w-20 h-20 bg-gradient-to-r from-primary to-accent rounded-3xl flex items-center justify-center mx-auto mb-6">
+                                <BookmarkIcon className="w-10 h-10 text-primary-foreground" />
                             </div>
-                            <h3 className="text-2xl font-bold font-poppins raycast-gradient-text mb-4">
-                                {searchQuery ? 'No matching bookmarks' : 'No bookmarks yet'}
+                            <h3 className="text-2xl font-bold mb-4">
+                                {searchQuery || selectedPublisher ? 'No matching bookmarks' : 'No bookmarks yet'}
                             </h3>
-                            <p className="text-muted-foreground text-base leading-relaxed mb-6">
-                                {searchQuery
-                                    ? `No bookmarks match "${searchQuery}"`
+                            <p className="text-muted-foreground mb-6">
+                                {searchQuery || selectedPublisher
+                                    ? 'Try adjusting your search or filters'
                                     : 'Start saving articles you want to read later'}
                             </p>
-                            {!searchQuery && (
+                            {!searchQuery && !selectedPublisher && (
                                 <Button
                                     onClick={() => router.push('/')}
-                                    className="raycast-btn raycast-btn-interactive text-white font-medium px-6 py-3 h-12 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                                    className="bg-gradient-to-r from-primary to-accent text-primary-foreground"
                                 >
                                     <Sparkles className="w-4 h-4 mr-2" />
                                     Discover News
@@ -236,97 +448,209 @@ export default function BookmarksPage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="grid gap-6">
-                        {filteredBookmarks.map((bookmark, index) => (
-                            <Card
+                    <div className={cn(
+                        viewMode === 'grid'
+                            ? 'grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                            : 'space-y-4'
+                    )}>
+                        {filteredAndSortedBookmarks.map((bookmark, index) => (
+                            <BookmarkCard
                                 key={bookmark.id}
-                                className="group raycast-glass border border-primary/20 cursor-pointer overflow-hidden rounded-3xl raycast-fade-in hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 hover:-translate-y-2"
-                                onClick={() => handleArticleClick(bookmark)}
-                                style={{ animationDelay: `${index * 100}ms` }}
-                            >
-                                <CardHeader className="p-8">
-                                    <div className="flex items-start justify-between gap-8">
-                                        <div className="flex-1 space-y-4">
-                                            <div className="flex items-center gap-3 flex-wrap">
-                                                <div className="flex items-center text-xs text-muted-foreground bg-muted/40 px-3 py-1.5 rounded-lg">
-                                                    <Clock className="w-3 h-3 mr-1.5" />
-                                                    <span className="text-xs">
-                                                        Saved {formatDistanceToNow(new Date(bookmark.createdAt), { addSuffix: true })}
-                                                    </span>
-                                                </div>
-                                                {bookmark.publisher && (
-                                                    <Badge
-                                                        variant="outline"
-                                                        className="bg-primary/10 text-primary border-primary/25 hover:bg-primary/20 font-medium px-3 py-1 rounded-lg text-xs"
-                                                    >
-                                                        {bookmark.publisher}
-                                                    </Badge>
-                                                )}
-                                            </div>
-
-                                            <h3 className="text-xl sm:text-2xl font-bold font-poppins leading-tight line-clamp-3 group-hover:text-primary transition-colors duration-300">
-                                                {bookmark.title}
-                                            </h3>
-
-                                            {bookmark.description && (
-                                                <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2">
-                                                    {bookmark.description}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        {bookmark.imageUrl && (
-                                            <div className="relative w-32 h-32 sm:w-40 sm:h-40 flex-shrink-0 rounded-2xl overflow-hidden bg-muted shadow-lg">
-                                                <Image
-                                                    src={bookmark.imageUrl}
-                                                    alt={bookmark.title}
-                                                    fill
-                                                    className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
-                                                    sizes="(max-width: 640px) 128px, 160px"
-                                                />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
-                                            </div>
-                                        )}
-                                    </div>
-                                </CardHeader>
-
-                                <CardContent className="pt-0 pb-8 px-8">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={(e) => {
-                                                    e.stopPropagation()
-                                                    window.open(bookmark.articleUrl, '_blank')
-                                                }}
-                                                className="text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300 font-semibold px-4 py-2 rounded-xl h-auto text-sm hover:scale-105"
-                                            >
-                                                <ExternalLink className="w-4 h-4 mr-2" />
-                                                Open Article
-                                            </Button>
-                                        </div>
-
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                handleDeleteBookmark(bookmark.id)
-                                            }}
-                                            disabled={deletingBookmarks.has(bookmark.id)}
-                                            className="text-destructive hover:text-destructive/70 hover:bg-destructive/10 transition-all duration-300 font-semibold px-4 py-2 rounded-xl h-auto text-sm hover:scale-105"
-                                        >
-                                            <Trash2 className="w-4 h-4 mr-2" />
-                                            {deletingBookmarks.has(bookmark.id) ? 'Removing...' : 'Remove'}
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                bookmark={bookmark}
+                                viewMode={viewMode}
+                                onEdit={() => handleArticleClick(bookmark)}
+                                onDelete={() => handleDeleteBookmark(bookmark.id)}
+                                onShare={() => handleShareBookmark(bookmark)}
+                                isDeleting={deletingBookmarks.has(bookmark.id)}
+                                index={index}
+                            />
                         ))}
                     </div>
                 )}
             </div>
         </div>
+    )
+}
+
+// Separate BookmarkCard component for better organization
+function BookmarkCard({
+    bookmark,
+    viewMode,
+    onEdit,
+    onDelete,
+    onShare,
+    isDeleting,
+    index
+}: {
+    bookmark: Bookmark
+    viewMode: ViewMode
+    onEdit: () => void
+    onDelete: () => void
+    onShare: () => void
+    isDeleting: boolean
+    index: number
+}) {
+    if (viewMode === 'list') {
+        return (
+            <Card
+                className="group glass-card cursor-pointer hover:shadow-xl hover:bg-accent/5 transition-all duration-500 ease-out animate-fade-in-up border-x border-t border-border/50 hover:border-primary/20 border-b-0"
+                onClick={onEdit}
+                style={{ animationDelay: `${index * 50}ms` }}
+            >
+                <CardContent className="p-6">
+                    <div className="flex gap-4">
+                        {bookmark.imageUrl && (
+                            <div className="relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden">
+                                <Image
+                                    src={bookmark.imageUrl}
+                                    alt={bookmark.title}
+                                    fill
+                                    className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                                    sizes="96px"
+                                />
+                            </div>
+                        )}
+
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-semibold line-clamp-2 group-hover:text-primary transition-colors duration-300">
+                                        {bookmark.title}
+                                    </h3>
+                                    {bookmark.description && (
+                                        <p className="text-sm text-muted-foreground line-clamp-2 mt-1 group-hover:text-foreground/80 transition-colors duration-300">
+                                            {bookmark.description}
+                                        </p>
+                                    )}
+                                    <div className="flex items-center gap-4 mt-3">
+                                        {bookmark.publisher && (
+                                            <Badge variant="outline" className="text-xs group-hover:border-primary/40 group-hover:bg-primary/10 transition-colors duration-300">
+                                                {bookmark.publisher}
+                                            </Badge>
+                                        )}
+                                        <span className="text-xs text-muted-foreground flex items-center gap-1 group-hover:text-foreground/70 transition-colors duration-300">
+                                            <Clock className="w-3 h-3" />
+                                            {formatDistanceToNow(new Date(bookmark.createdAt), { addSuffix: true })}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-primary/10"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <MoreHorizontal className="w-4 h-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); window.open(bookmark.articleUrl, '_blank') }}>
+                                            <ExternalLink className="w-4 h-4 mr-2" />
+                                            Open Article
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onShare() }}>
+                                            <Share2 className="w-4 h-4 mr-2" />
+                                            Share
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                            onClick={(e) => { e.stopPropagation(); onDelete() }}
+                                            disabled={isDeleting}
+                                            className="text-destructive"
+                                        >
+                                            <Trash2 className="w-4 h-4 mr-2" />
+                                            {isDeleting ? 'Removing...' : 'Remove'}
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        )
+    }
+
+    return (
+        <Card
+            className="group glass-card cursor-pointer hover:shadow-2xl hover:-translate-y-2 hover:bg-accent/5 transition-all duration-500 ease-out animate-fade-in-up overflow-hidden border-x border-t border-border/50 hover:border-primary/20 border-b-0"
+            onClick={onEdit}
+            style={{ animationDelay: `${index * 100}ms` }}
+        >
+            {bookmark.imageUrl && (
+                <div className="relative h-48 overflow-hidden">
+                    <Image
+                        src={bookmark.imageUrl}
+                        alt={bookmark.title}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent group-hover:from-black/40 transition-colors duration-500" />
+
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/20 hover:bg-black/40 text-white backdrop-blur-sm"
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); window.open(bookmark.articleUrl, '_blank') }}>
+                                <ExternalLink className="w-4 h-4 mr-2" />
+                                Open Article
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onShare() }}>
+                                <Share2 className="w-4 h-4 mr-2" />
+                                Share
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={(e) => { e.stopPropagation(); onDelete() }}
+                                disabled={isDeleting}
+                                className="text-destructive"
+                            >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                {isDeleting ? 'Removing...' : 'Remove'}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            )}
+
+            <CardContent className="p-6">
+                <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground group-hover:text-foreground/70 transition-colors duration-300">
+                        <Clock className="w-3 h-3" />
+                        <span>{formatDistanceToNow(new Date(bookmark.createdAt), { addSuffix: true })}</span>
+                        {bookmark.publisher && (
+                            <>
+                                <span>•</span>
+                                <Badge variant="outline" className="text-xs group-hover:border-primary/40 group-hover:bg-primary/10 transition-colors duration-300">
+                                    {bookmark.publisher}
+                                </Badge>
+                            </>
+                        )}
+                    </div>
+
+                    <h3 className="font-semibold line-clamp-2 group-hover:text-primary transition-colors duration-300">
+                        {bookmark.title}
+                    </h3>
+
+                    {bookmark.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-3 group-hover:text-foreground/80 transition-colors duration-300">
+                            {bookmark.description}
+                        </p>
+                    )}
+                </div>
+            </CardContent>
+        </Card>
     )
 } 

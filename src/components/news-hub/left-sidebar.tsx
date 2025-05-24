@@ -410,7 +410,7 @@ export function LeftSidebar({ sources, selectedSource, onSourceSelect, isCollaps
                                         <Star className="w-4 h-4 text-primary-foreground" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h4 className="font-medium text-sm mb-1">Today's Highlights</h4>
+                                        <h4 className="font-medium text-sm mb-1">Today&apos;s Highlights</h4>
                                         <p className="text-xs text-muted-foreground mb-2">
                                             3 trending stories in your interests
                                         </p>

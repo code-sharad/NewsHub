@@ -22,10 +22,40 @@ export function ThemeToggle() {
             description: 'Light mode'
         },
         {
-            value: 'dark' as const,
-            label: 'Dark',
+            value: 'ocean' as const,
+            label: 'Ocean',
             icon: Moon,
-            description: 'Dark mode'
+            description: 'Ocean mode'
+        },
+        {
+            value: 'sunset' as const,
+            label: 'Sunset',
+            icon: Moon,
+            description: 'Sunset mode'
+        },
+        {
+            value: 'coffee' as const,
+            label: 'Coffee',
+            icon: Moon,
+            description: 'Coffee mode'
+        },
+        {
+            value: 'monochrome' as const,
+            label: 'Monochrome',
+            icon: Moon,
+            description: 'Monochrome mode'
+        },
+        {
+            value: 'dark-oled' as const,
+            label: 'Dark OLED',
+            icon: Moon,
+            description: 'Dark OLED mode'
+        },
+        {
+            value: 'dark-formal' as const,
+            label: 'Dark Formal',
+            icon: Moon,
+            description: 'Dark Formal mode'
         },
         {
             value: 'system' as const,
@@ -54,18 +84,17 @@ export function ThemeToggle() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button 
-                    variant="ghost" 
-                    size="sm" 
+                <Button
+                    variant="ghost"
+                    size="sm"
                     className="w-auto h-9 px-3 rounded-lg hover:bg-accent/80 transition-all duration-200 group"
                 >
                     <div className="flex items-center gap-2">
                         <div className="relative">
                             <CurrentIcon className="w-4 h-4 transition-all duration-300 group-hover:scale-110" />
                             {theme === 'system' && (
-                                <div className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full transition-colors duration-300 ${
-                                    actualTheme === 'dark' ? 'bg-blue-500' : 'bg-amber-500'
-                                }`} />
+                                <div className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full transition-colors duration-300 ${actualTheme === 'dark-formal' ? 'bg-stone-500' : 'bg-amber-500'
+                                    }`} />
                             )}
                         </div>
                         <span className="hidden sm:inline-block text-sm font-medium">
@@ -75,9 +104,9 @@ export function ThemeToggle() {
                     </div>
                 </Button>
             </DropdownMenuTrigger>
-            
-            <DropdownMenuContent 
-                align="end" 
+
+            <DropdownMenuContent
+                align="end"
                 className="w-52 p-2 shadow-xl border bg-popover/95 backdrop-blur-sm"
             >
                 <div className="mb-2">
@@ -85,30 +114,28 @@ export function ThemeToggle() {
                         Appearance
                     </div>
                 </div>
-                
+
                 {themeOptions.map((option) => {
                     const Icon = option.icon
                     const isSelected = theme === option.value
-                    
+
                     return (
                         <DropdownMenuItem
                             key={option.value}
                             onClick={() => setTheme(option.value)}
-                            className={`cursor-pointer rounded-md p-2 transition-all duration-200 ${
-                                isSelected 
-                                    ? 'bg-primary/10 text-primary border border-primary/20' 
-                                    : 'hover:bg-accent/80'
-                            }`}
+                            className={`cursor-pointer rounded-md p-2 transition-all duration-200 ${isSelected
+                                ? 'bg-primary/10 text-primary border border-primary/20'
+                                : 'hover:bg-accent/80'
+                                }`}
                         >
                             <div className="flex items-center gap-3 w-full">
-                                <div className={`p-1.5 rounded-md transition-colors duration-200 ${
-                                    isSelected 
-                                        ? 'bg-primary/20 text-primary' 
-                                        : 'bg-muted/50 text-muted-foreground'
-                                }`}>
+                                <div className={`p-1.5 rounded-md transition-colors duration-200 ${isSelected
+                                    ? 'bg-primary/20 text-primary'
+                                    : 'bg-muted/50 text-muted-foreground'
+                                    }`}>
                                     <Icon className="w-3.5 h-3.5" />
                                 </div>
-                                
+
                                 <div className="flex-1">
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm font-medium">
@@ -127,7 +154,7 @@ export function ThemeToggle() {
                         </DropdownMenuItem>
                     )
                 })}
-                
+
                 <div className="mt-2 pt-2 border-t">
                     <div className="text-xs text-muted-foreground px-2 py-1">
                         Current: <span className="font-medium capitalize">{actualTheme}</span> theme
@@ -139,7 +166,8 @@ export function ThemeToggle() {
 }
 
 export function ThemeIndicator() {
-    const { isDark, isLoading } = useTheme()
+    const { actualTheme, isLoading } = useTheme()
+    const isDark = actualTheme === 'dark-oled' || actualTheme === 'dark-formal'
 
     if (isLoading) return null
 

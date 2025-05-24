@@ -18,18 +18,24 @@ export function LoadingScreen({
 
     const getThemeGradient = () => {
         switch (actualTheme) {
-            case 'neon':
-                return 'from-purple-600 via-blue-600 to-cyan-400'
-            case 'cyberpunk':
-                return 'from-pink-500 via-purple-600 to-yellow-400'
-            case 'retro':
-                return 'from-orange-400 via-pink-500 to-purple-600'
             case 'nature':
                 return 'from-green-400 via-emerald-500 to-teal-600'
-            case 'dark':
-                return 'from-blue-600 via-purple-600 to-blue-800'
+            case 'ocean':
+                return 'from-blue-600 via-teal-500 to-cyan-400'
+            case 'sunset':
+                return 'from-yellow-400 via-orange-500 to-red-500'
+            case 'coffee':
+                return 'from-amber-200 via-orange-300 to-brown-500'
+            case 'monochrome':
+                return 'from-gray-200 via-gray-400 to-gray-600'
+            case 'dark-oled':
+                return 'from-black via-gray-900 to-blue-900'
+            case 'light':
+            case 'system':
+            case 'dark-formal':
+                return 'from-stone-800 via-stone-700 to-amber-600'
             default:
-                return 'from-blue-500 via-purple-500 to-blue-600'
+                return 'from-stone-500 via-stone-500 to-stone-600'
         }
     }
 
@@ -163,27 +169,48 @@ export function SkeletonLoader({ className, ...props }: React.HTMLAttributes<HTM
 // Loading cards for news feed
 export function NewsCardSkeleton() {
     return (
-        <div className="news-card p-6 space-y-4">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <SkeletonLoader className="h-6 w-20" />
-                    <SkeletonLoader className="h-4 w-24" />
+        <div className="bg-card/80 backdrop-blur-sm border border-border/60 rounded-2xl p-0 h-[420px] overflow-hidden animate-pulse border-b-0">
+            {/* Image skeleton - Top */}
+            <div className="relative h-52 bg-gradient-to-br from-muted/40 to-muted/60 rounded-t-2xl">
+                {/* Source indicator skeleton */}
+                <div className="absolute top-3 left-3">
+                    <SkeletonLoader className="h-6 w-20 rounded-lg" />
                 </div>
-                <SkeletonLoader className="h-4 w-4" />
+
+                {/* Action buttons skeleton */}
+                <div className="absolute top-3 right-3 flex gap-2">
+                    <SkeletonLoader className="h-9 w-9 rounded-xl" />
+                    <SkeletonLoader className="h-9 w-9 rounded-xl" />
+                </div>
             </div>
 
-            <div className="space-y-3">
-                <SkeletonLoader className="h-6 w-full" />
-                <SkeletonLoader className="h-6 w-4/5" />
-                <SkeletonLoader className="h-6 w-3/5" />
-            </div>
+            {/* Content skeleton - Bottom */}
+            <div className="p-5 flex flex-col justify-between h-[212px]">
+                <div className="space-y-3">
+                    {/* Meta info skeleton */}
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <SkeletonLoader className="h-1.5 w-1.5 rounded-full" />
+                            <SkeletonLoader className="h-3 w-16" />
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <SkeletonLoader className="h-3 w-3 rounded" />
+                            <SkeletonLoader className="h-3 w-20" />
+                        </div>
+                    </div>
 
-            <div className="flex items-center justify-between">
-                <SkeletonLoader className="h-4 w-32" />
-                <div className="flex gap-2">
-                    <SkeletonLoader className="h-8 w-8 rounded-lg" />
-                    <SkeletonLoader className="h-8 w-8 rounded-lg" />
-                    <SkeletonLoader className="h-8 w-8 rounded-lg" />
+                    {/* Title skeleton */}
+                    <div className="space-y-2">
+                        <SkeletonLoader className="h-5 w-full" />
+                        <SkeletonLoader className="h-5 w-4/5" />
+                        <SkeletonLoader className="h-5 w-3/5" />
+                    </div>
+                </div>
+
+                {/* Actions skeleton */}
+                <div className="flex items-center justify-between pt-3 border-t border-border/40">
+                    <SkeletonLoader className="h-8 w-16 rounded-lg" />
+                    <SkeletonLoader className="h-8 w-20 rounded-lg" />
                 </div>
             </div>
         </div>

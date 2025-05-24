@@ -195,7 +195,7 @@ export function RightSidebar() {
                     {/* Daily Summary */}
                     <div className="space-y-3">
                         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                            Today's Summary
+                            Today&apos;s Summary
                         </h3>
                         <Card className="glass-card border-border/50 p-4">
                             <div className="space-y-3">

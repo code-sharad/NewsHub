@@ -272,7 +272,7 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
     }
 
     return (
-        <div className="h-full dot-grid-bg mt-12 ">
+        <div className="h-full dot-grid-bg my-12 p-6 ">
             <div className="max-w-6xl mx-auto space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {articles.map((article, index) => {
@@ -285,10 +285,10 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
                                 key={`${article.loc}-${index}`}
                                 className={cn(
                                     "news-card cursor-pointer group relative overflow-hidden",
-                                    "animate-fade-in-up transition-all duration-300 ease-out",
-                                    "hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1",
-                                    "bg-card/80 backdrop-blur-sm border border-border/60",
-                                    "rounded-2xl p-0 h-[420px]"
+                                    "animate-fade-in-up transition-all duration-500 ease-out",
+                                    "hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-2 hover:bg-accent/5",
+                                    "bg-card/80 backdrop-blur-sm border border-border/60 hover:border-primary/20",
+                                    "rounded-2xl p-0 h-[420px] border-b-0"
                                 )}
                                 style={{ animationDelay: `${index * 100}ms` }}
                                 onClick={() => handleArticleClick(article)}
@@ -300,7 +300,7 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
                                             src={article.news_image}
                                             alt={article.news_title}
                                             fill
-                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                            className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                                             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                                             onError={(e) => {
                                                 const target = e.target as HTMLImageElement;
@@ -310,6 +310,7 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
                                     ) : (
                                         <div className={cn(
                                             "w-full h-full bg-gradient-to-br flex items-center justify-center",
+                                            "transition-all duration-700 ease-out group-hover:scale-110",
                                             getSourceGradient(article.source)
                                         )}>
                                             <div className="text-center text-white">
@@ -325,7 +326,8 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
                                     <div className="absolute top-3 left-3">
                                         <div className={cn(
                                             "px-2 py-1 rounded-lg text-xs font-medium text-white",
-                                            "bg-black/30 backdrop-blur-sm border border-white/20"
+                                            "bg-black/30 backdrop-blur-sm border border-white/20",
+                                            "transition-all duration-500 ease-out group-hover:bg-black/50 group-hover:backdrop-blur-md"
                                         )}>
                                             {formatSourceName(article.source)}
                                         </div>
@@ -337,9 +339,10 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
                                             variant="ghost"
                                             size="icon"
                                             className={cn(
-                                                "w-9 h-9 rounded-xl transition-all duration-200",
+                                                "w-9 h-9 rounded-xl transition-all duration-300 ease-out",
                                                 "bg-white/10 backdrop-blur-md border border-white/20",
                                                 "hover:bg-white/20 text-white shadow-lg",
+                                                "group-hover:bg-white/15 group-hover:shadow-xl",
                                                 isBookmarked
                                                     ? "bg-blue-500/80 hover:bg-blue-500"
                                                     : "hover:bg-blue-500/50"
@@ -348,7 +351,7 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
                                             disabled={isBookmarking}
                                         >
                                             <BookmarkIcon className={cn(
-                                                "w-4 h-4 transition-all duration-200",
+                                                "w-4 h-4 transition-all duration-300 ease-out",
                                                 (isBookmarked || isBookmarking) && "fill-current",
                                                 isBookmarking && "animate-pulse"
                                             )} />
@@ -358,23 +361,30 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
                                             variant="ghost"
                                             size="icon"
                                             className={cn(
-                                                "w-9 h-9 rounded-xl transition-all duration-200",
+                                                "w-9 h-9 rounded-xl transition-all duration-300 ease-out",
                                                 "bg-white/10 backdrop-blur-md border border-white/20",
-                                                "hover:bg-white/20 text-white shadow-lg hover:bg-green-500/50"
+                                                "hover:bg-white/20 text-white shadow-lg hover:bg-green-500/50",
+                                                "group-hover:bg-white/15 group-hover:shadow-xl"
                                             )}
                                             onClick={(e) => {
                                                 e.stopPropagation()
-                                                navigator.share?.({
-                                                    title: article.news_title,
-                                                    url: article.loc
-                                                }) || navigator.clipboard.writeText(article.loc)
+                                                if (navigator.share) {
+                                                    navigator.share({
+                                                        title: article.news_title,
+                                                        url: article.loc
+                                                    }).catch(() => {
+                                                        navigator.clipboard.writeText(article.loc)
+                                                    })
+                                                } else {
+                                                    navigator.clipboard.writeText(article.loc)
+                                                }
                                                 toast({
                                                     title: "Link copied!",
                                                     description: "Article link copied to clipboard.",
                                                 })
                                             }}
                                         >
-                                            <Share2 className="w-4 h-4" />
+                                            <Share2 className="w-4 h-4 transition-all duration-300 ease-out" />
                                         </Button>
                                     </div>
                                 </div>
@@ -383,17 +393,17 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
                                 <div className="p-5 flex flex-col justify-between h-[212px]">
                                     <div className="space-y-3">
                                         {/* Meta info */}
-                                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                                        <div className="flex items-center justify-between text-xs text-muted-foreground group-hover:text-foreground/70 transition-colors duration-500 ease-out">
                                             <div className="flex items-center gap-2">
                                                 <div className={cn(
-                                                    "w-1.5 h-1.5 rounded-full",
+                                                    "w-1.5 h-1.5 rounded-full transition-all duration-500 ease-out group-hover:scale-125",
                                                     "bg-gradient-to-r", getSourceGradient(article.source)
                                                 )} />
-                                                <span className="font-medium">{article.publisher}</span>
+                                                <span className="font-medium transition-colors duration-500 ease-out group-hover:text-primary/80">{article.publisher}</span>
                                             </div>
                                             <div className="flex items-center gap-1.5">
-                                                <Clock className="w-3 h-3" />
-                                                <span>{formatArticleDate(article.news_publication_date)}</span>
+                                                <Clock className="w-3 h-3 transition-all duration-500 ease-out group-hover:scale-110" />
+                                                <span className="transition-colors duration-500 ease-out">{formatArticleDate(article.news_publication_date)}</span>
                                             </div>
                                         </div>
 
@@ -401,20 +411,21 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
                                         <h3 className={cn(
                                             "text-lg font-bold leading-tight line-clamp-3",
                                             "text-foreground group-hover:text-primary",
-                                            "transition-colors duration-300"
+                                            "transition-colors duration-500 ease-out"
                                         )}>
                                             {article.news_title}
                                         </h3>
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="flex items-center justify-between pt-3 border-t border-border/40">
+                                    <div className="flex items-center justify-between pt-3 border-t border-border/40 group-hover:border-primary/30 transition-colors duration-500 ease-out">
                                         <Button
                                             variant="ghost"
                                             size="sm"
                                             className={cn(
                                                 "h-8 px-3 rounded-lg text-xs font-medium",
-                                                "transition-all duration-200",
+                                                "transition-all duration-500 ease-out",
+                                                "group-hover:shadow-md group-hover:scale-105",
                                                 isLiked
                                                     ? "text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-950 dark:hover:bg-red-900"
                                                     : "text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
@@ -422,7 +433,8 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
                                             onClick={(e) => handleLike(article, e)}
                                         >
                                             <Heart className={cn(
-                                                "w-3.5 h-3.5 mr-1",
+                                                "w-3.5 h-3.5 mr-1 transition-all duration-500 ease-out",
+                                                "group-hover:scale-110",
                                                 isLiked && "fill-current"
                                             )} />
                                             Like
@@ -433,8 +445,8 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
                                             className={cn(
                                                 "h-8 px-3 rounded-lg text-xs font-medium",
                                                 "bg-primary text-primary-foreground",
-                                                "hover:bg-primary/90 transition-all duration-200",
-                                                "shadow-sm hover:shadow-md"
+                                                "hover:bg-primary/90 transition-all duration-500 ease-out",
+                                                "shadow-sm hover:shadow-lg group-hover:shadow-xl group-hover:scale-105"
                                             )}
                                             onClick={(e) => {
                                                 e.stopPropagation()
@@ -442,18 +454,10 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
                                             }}
                                         >
                                             Read
-                                            <ExternalLink className="w-3 h-3 ml-1" />
+                                            <ExternalLink className="w-3 h-3 ml-1 transition-all duration-500 ease-out group-hover:scale-110" />
                                         </Button>
                                     </div>
                                 </div>
-
-                                {/* Hover indicator */}
-                                <div className={cn(
-                                    "absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r",
-                                    getSourceGradient(article.source),
-                                    "transform scale-x-0 group-hover:scale-x-100",
-                                    "transition-transform duration-300 origin-left"
-                                )} />
                             </Card>
                         )
                     })}

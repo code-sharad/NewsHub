@@ -10,7 +10,8 @@ import { RightSidebar } from './right-sidebar'
 import { LoadingScreen, NewsCardSkeleton } from '@/components/ui/loading-screen'
 import { TrendingUp, Menu, AlertCircle, RefreshCw, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
+import { VisuallyHidden } from '@/components/ui/visually-hidden'
 import { cn } from '@/lib/utils'
 
 const ARTICLES_PER_PAGE = 10
@@ -110,6 +111,9 @@ export function NewsHub() {
                 {/* Mobile Menu */}
                 <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                     <SheetContent side="left" className="w-80 p-0">
+                        <VisuallyHidden>
+                            <SheetTitle>Navigation Menu</SheetTitle>
+                        </VisuallyHidden>
                         <div className="flex items-center justify-between p-4 border-b">
                             <h2 className="text-lg font-semibold">Navigation</h2>
                             <Button
@@ -181,7 +185,7 @@ export function NewsHub() {
                                         </div>
                                         <h3 className="text-xl font-bold mb-2 text-destructive">Failed to load news</h3>
                                         <p className="text-muted-foreground mb-4">
-                                            We couldn't fetch the latest news. Please try again.
+                                            We couldn&apos;t fetch the latest news. Please try again.
                                         </p>
                                         <Button
                                             onClick={handleRefresh}
@@ -204,36 +208,18 @@ export function NewsHub() {
 
                                     {/* Loading skeletons while fetching more */}
                                     {isLoading && hasPartialData && (
-                                        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pb-8">
-                                            {[...Array(3)].map((_, i) => (
-                                                <NewsCardSkeleton key={`skeleton-${i}`} />
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {/* Load More Button */}
-                                    {!isLoading && hasMoreArticles && (
-                                        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                                            <div className="text-center">
-                                                <Button
-                                                    onClick={handleLoadMore}
-                                                    size="lg"
-                                                    className={cn(
-                                                        "px-8 py-3 rounded-xl font-medium",
-                                                        "bg-gradient-to-r from-primary to-accent text-primary-foreground",
-                                                        "hover:scale-105 transition-all duration-300",
-                                                        "shadow-glow hover:shadow-neon"
-                                                    )}
-                                                >
-                                                    <TrendingUp className="w-4 h-4 mr-2" />
-                                                    Load {Math.min(ARTICLES_PER_PAGE, filteredArticles.length - articlesShown)} more articles
-                                                </Button>
-                                                <p className="text-xs text-muted-foreground mt-3">
-                                                    Showing {visibleArticles.length} of {filteredArticles.length} articles
-                                                </p>
+                                        <div className="h-full dot-grid-bg mt-12 p-6">
+                                            <div className="max-w-6xl mx-auto space-y-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                                    {[...Array(6)].map((_, i) => (
+                                                        <NewsCardSkeleton key={`skeleton-${i}`} />
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     )}
+
+
 
                                     {/* End of feed message */}
                                     {!hasMoreArticles && visibleArticles.length > 0 && (
@@ -243,15 +229,39 @@ export function NewsHub() {
                                                 "animate-fade-in-up"
                                             )}>
                                                 <div className="text-gradient-primary text-xl font-semibold mb-3">
-                                                    You're all caught up! 🎉
+                                                    You&apos;re all caught up! 🎉
                                                 </div>
                                                 <p className="text-muted-foreground">
-                                                    You've seen all {filteredArticles.length} articles. Check back later for more news.
+                                                    You&apos;ve seen all {filteredArticles.length} articles. Check back later for more news.
                                                 </p>
                                             </div>
                                         </div>
                                     )}
                                 </>
+                            )}
+                            {/* Load More Button */}
+                            {hasMoreArticles && (
+                                <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                                    <div className="text-center space-y-6">
+                                        <Button
+                                            onClick={handleLoadMore}
+                                            size="lg"
+                                            className={cn(
+                                                "px-8 py-3 rounded-xl font-medium w-full max-w-sm",
+                                                "bg-gradient-to-r from-primary to-accent text-primary-foreground",
+                                                "hover:scale-105 transition-all duration-300",
+                                                "shadow-glow hover:shadow-neon"
+                                            )}
+                                        >
+                                            <TrendingUp className="w-4 h-4 mr-2" />
+                                            Load More Articles
+                                        </Button>
+
+                                        <p className="text-xs text-muted-foreground mt-4">
+                                            Showing {visibleArticles.length} of {filteredArticles.length} articles
+                                        </p>
+                                    </div>
+                                </div>
                             )}
                         </div>
 
