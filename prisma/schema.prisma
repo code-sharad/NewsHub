@@ -1,15 +1,13 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider      = "prisma-client-js"
   output        = "./src/generated/prisma"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
- }
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
 model Account {
   id                String  @id @default(cuid())
@@ -24,8 +22,7 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -39,23 +36,22 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?    @unique
   emailVerified DateTime?
   image         String?
   bio           String?
   location      String?
   website       String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  accounts  Account[]
-  sessions  Session[]
-  bookmarks Bookmark[]
-  posts     Post[]
-  comments  Comment[]
-  votes     Vote[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  accounts      Account[]
+  bookmarks     Bookmark[]
+  comments      Comment[]
+  posts         Post[]
+  sessions      Session[]
+  votes         Vote[]
 }
 
 model VerificationToken {
@@ -75,48 +71,45 @@ model Bookmark {
   imageUrl    String?
   publisher   String?
   createdAt   DateTime @default(now())
-  tags        String?  // JSON string of tags
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tags        String?
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, articleUrl])
 }
 
 model Post {
-  id          String   @id @default(cuid())
-  title       String
-  content     String
-  summary     String?
-  authorId    String
-  published   Boolean  @default(false)
-  featured    Boolean  @default(false)
-  tags        String?  // JSON string of tags
-  postType    String   @default("discussion") // question, voice, ama, discussion
-  voteCount   Int      @default(0)
-  viewCount   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  comments Comment[]
-  votes    Vote[]
+  id        String    @id @default(cuid())
+  title     String
+  content   String
+  summary   String?
+  authorId  String
+  published Boolean   @default(false)
+  featured  Boolean   @default(false)
+  tags      String?
+  postType  String    @default("discussion")
+  voteCount Int       @default(0)
+  viewCount Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  comments  Comment[]
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  votes     Vote[]
 }
 
 model Comment {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   content   String
   authorId  String
   postId    String
-  parentId  String?  // For nested replies
-  voteCount Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  author User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  post   Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
-  parent Comment? @relation("CommentReplies", fields: [parentId], references: [id])
-  replies Comment[] @relation("CommentReplies")
-  votes  Vote[]
+  parentId  String?
+  voteCount Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  votes     Vote[]
 }
 
 model Vote {
@@ -124,12 +117,11 @@ model Vote {
   userId    String
   postId    String?
   commentId String?
-  type      String   // upvote, downvote
+  type      String
   createdAt DateTime @default(now())
-
-  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
-  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
   @@unique([userId, commentId])
