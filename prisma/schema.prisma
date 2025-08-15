@@ -2,8 +2,9 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
-  output = "./src/generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "./src/generated/prisma"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
@@ -49,7 +50,7 @@ model User {
   website       String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  
+
   accounts  Account[]
   sessions  Session[]
   bookmarks Bookmark[]
@@ -76,7 +77,7 @@ model Bookmark {
   publisher   String?
   createdAt   DateTime @default(now())
   tags        String?  // JSON string of tags
-  
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, articleUrl])
@@ -96,7 +97,7 @@ model Post {
   viewCount   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+
   author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   comments Comment[]
   votes    Vote[]
@@ -111,7 +112,7 @@ model Comment {
   voteCount Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   author User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   post   Post    @relation(fields: [postId], references: [id], onDelete: Cascade)
   parent Comment? @relation("CommentReplies", fields: [parentId], references: [id])
@@ -126,11 +127,11 @@ model Vote {
   commentId String?
   type      String   // upvote, downvote
   createdAt DateTime @default(now())
-  
+
   user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
   comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
 
   @@unique([userId, postId])
   @@unique([userId, commentId])
-} 
+}
