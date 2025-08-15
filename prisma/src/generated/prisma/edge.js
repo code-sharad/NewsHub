@@ -218,7 +218,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/ram/myprojects/newshub/prisma/src/generated/prisma",
+      "value": "/home/ram/dev/my-projects/NewsHub/prisma/src/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -229,10 +229,14 @@ const config = {
         "fromEnvVar": null,
         "value": "debian-openssl-3.0.x",
         "native": true
+      },
+      {
+        "fromEnvVar": null,
+        "value": "debian-openssl-3.0.x"
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/ram/myprojects/newshub/prisma/schema.prisma",
+    "sourceFilePath": "/home/ram/dev/my-projects/NewsHub/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -246,6 +250,7 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -254,9 +259,9 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"./src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Account {\n  id                String  @id @default(cuid())\n  userId            String\n  type              String\n  provider          String\n  providerAccountId String\n  refresh_token     String?\n  access_token      String?\n  expires_at        Int?\n  token_type        String?\n  scope             String?\n  id_token          String?\n  session_state     String?\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([provider, providerAccountId])\n}\n\nmodel Session {\n  id           String   @id @default(cuid())\n  sessionToken String   @unique\n  userId       String\n  expires      DateTime\n  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n}\n\nmodel User {\n  id            String    @id @default(cuid())\n  name          String?\n  email         String?   @unique\n  emailVerified DateTime?\n  image         String?\n  bio           String?\n  location      String?\n  website       String?\n  createdAt     DateTime  @default(now())\n  updatedAt     DateTime  @updatedAt\n\n  accounts  Account[]\n  sessions  Session[]\n  bookmarks Bookmark[]\n  posts     Post[]\n  comments  Comment[]\n  votes     Vote[]\n}\n\nmodel VerificationToken {\n  identifier String\n  token      String   @unique\n  expires    DateTime\n\n  @@unique([identifier, token])\n}\n\nmodel Bookmark {\n  id          String   @id @default(cuid())\n  userId      String\n  articleUrl  String\n  title       String\n  description String?\n  imageUrl    String?\n  publisher   String?\n  createdAt   DateTime @default(now())\n  tags        String? // JSON string of tags\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([userId, articleUrl])\n}\n\nmodel Post {\n  id        String   @id @default(cuid())\n  title     String\n  content   String\n  summary   String?\n  authorId  String\n  published Boolean  @default(false)\n  featured  Boolean  @default(false)\n  tags      String? // JSON string of tags\n  postType  String   @default(\"discussion\") // question, voice, ama, discussion\n  voteCount Int      @default(0)\n  viewCount Int      @default(0)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)\n  comments Comment[]\n  votes    Vote[]\n}\n\nmodel Comment {\n  id        String   @id @default(cuid())\n  content   String\n  authorId  String\n  postId    String\n  parentId  String? // For nested replies\n  voteCount Int      @default(0)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  author  User      @relation(fields: [authorId], references: [id], onDelete: Cascade)\n  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)\n  parent  Comment?  @relation(\"CommentReplies\", fields: [parentId], references: [id])\n  replies Comment[] @relation(\"CommentReplies\")\n  votes   Vote[]\n}\n\nmodel Vote {\n  id        String   @id @default(cuid())\n  userId    String\n  postId    String?\n  commentId String?\n  type      String // upvote, downvote\n  createdAt DateTime @default(now())\n\n  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)\n  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)\n\n  @@unique([userId, postId])\n  @@unique([userId, commentId])\n}\n",
-  "inlineSchemaHash": "92c1ab626b90f6f2e15b134dfae3b065bf9bb8b14ca44dfe5330a9bd90f35b12",
-  "copyEngine": false
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider      = \"prisma-client-js\"\n  output        = \"./src/generated/prisma\"\n  binaryTargets = [\"native\", \"debian-openssl-3.0.x\"]\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Account {\n  id                String  @id @default(cuid())\n  userId            String\n  type              String\n  provider          String\n  providerAccountId String\n  refresh_token     String?\n  access_token      String?\n  expires_at        Int?\n  token_type        String?\n  scope             String?\n  id_token          String?\n  session_state     String?\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([provider, providerAccountId])\n}\n\nmodel Session {\n  id           String   @id @default(cuid())\n  sessionToken String   @unique\n  userId       String\n  expires      DateTime\n  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n}\n\nmodel User {\n  id            String    @id @default(cuid())\n  name          String?\n  email         String?   @unique\n  emailVerified DateTime?\n  image         String?\n  bio           String?\n  location      String?\n  website       String?\n  createdAt     DateTime  @default(now())\n  updatedAt     DateTime  @updatedAt\n\n  accounts  Account[]\n  sessions  Session[]\n  bookmarks Bookmark[]\n  posts     Post[]\n  comments  Comment[]\n  votes     Vote[]\n}\n\nmodel VerificationToken {\n  identifier String\n  token      String   @unique\n  expires    DateTime\n\n  @@unique([identifier, token])\n}\n\nmodel Bookmark {\n  id          String   @id @default(cuid())\n  userId      String\n  articleUrl  String\n  title       String\n  description String?\n  imageUrl    String?\n  publisher   String?\n  createdAt   DateTime @default(now())\n  tags        String? // JSON string of tags\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  @@unique([userId, articleUrl])\n}\n\nmodel Post {\n  id        String   @id @default(cuid())\n  title     String\n  content   String\n  summary   String?\n  authorId  String\n  published Boolean  @default(false)\n  featured  Boolean  @default(false)\n  tags      String? // JSON string of tags\n  postType  String   @default(\"discussion\") // question, voice, ama, discussion\n  voteCount Int      @default(0)\n  viewCount Int      @default(0)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  author   User      @relation(fields: [authorId], references: [id], onDelete: Cascade)\n  comments Comment[]\n  votes    Vote[]\n}\n\nmodel Comment {\n  id        String   @id @default(cuid())\n  content   String\n  authorId  String\n  postId    String\n  parentId  String? // For nested replies\n  voteCount Int      @default(0)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  author  User      @relation(fields: [authorId], references: [id], onDelete: Cascade)\n  post    Post      @relation(fields: [postId], references: [id], onDelete: Cascade)\n  parent  Comment?  @relation(\"CommentReplies\", fields: [parentId], references: [id])\n  replies Comment[] @relation(\"CommentReplies\")\n  votes   Vote[]\n}\n\nmodel Vote {\n  id        String   @id @default(cuid())\n  userId    String\n  postId    String?\n  commentId String?\n  type      String // upvote, downvote\n  createdAt DateTime @default(now())\n\n  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n  post    Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)\n  comment Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)\n\n  @@unique([userId, postId])\n  @@unique([userId, commentId])\n}\n",
+  "inlineSchemaHash": "3b71dbf2f9072e6175c0749ba20ae43ee63aa1e3e8b8e7bea08ad2a09a5a9fb5",
+  "copyEngine": true
 }
 config.dirname = '/'
 
