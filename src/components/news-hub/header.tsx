@@ -37,6 +37,7 @@ export function Header({ onSearch }: HeaderProps) {
         e.preventDefault()
         onSearch(searchQuery)
     }
+    console.log(session)
 
     return (
         <header className={cn(
@@ -131,7 +132,7 @@ export function Header({ onSearch }: HeaderProps) {
                                     )}
                                 >
                                     <Avatar className="h-7 w-7">
-                                        <AvatarImage src={session.user?.image || ''} alt={session.user?.name || ''} />
+                                        <AvatarImage src={session.user.image || ''} alt={session.user?.name || ''} />
                                         <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-xs font-medium">
                                             {session.user?.name?.charAt(0).toUpperCase() || 'U'}
                                         </AvatarFallback>
@@ -233,4 +234,4 @@ export function Header({ onSearch }: HeaderProps) {
             </div>
         </header>
     )
-} 
+}

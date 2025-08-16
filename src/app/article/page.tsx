@@ -203,13 +203,13 @@ function ArticlePageContent() {
                     <Button
                         variant="ghost"
                         onClick={() => router.back()}
-                        className="flex items-center"
+                        className="flex items-center text-black dark:text-white"
                     >
                         <ArrowLeft className="w-4 h-4 mr-2" />
                         Back
                     </Button>
 
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 text-black dark:text-white">
                         <Button
                             variant="ghost"
                             size="sm"
@@ -231,7 +231,7 @@ function ArticlePageContent() {
                                 href={articleUrl || '#'}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center"
+                                className="flex items-center text-white "
                             >
                                 <ExternalLink className="w-4 h-4 mr-1" />
                                 Original
@@ -248,11 +248,11 @@ function ArticlePageContent() {
                         {/* Article Meta */}
                         <div className="flex items-center gap-2 mb-4">
                             {originalSource && (
-                                <Badge variant="outline" className="capitalize">
+                                <Badge variant="outline" className="capitalize text-black">
                                     {originalSource.replace(/([A-Z])/g, ' $1').trim()}
                                 </Badge>
                             )}
-                            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <div className="flex items-center text-sm text-gray-900 dark:text-gray-400">
                                 <Clock className="w-3 h-3 mr-1" />
                                 {article?.publishedDate || originalDate ?
                                     formatDistanceToNow(new Date(article?.publishedDate || originalDate!), { addSuffix: true }) :
@@ -260,7 +260,7 @@ function ArticlePageContent() {
                                 }
                             </div>
                             {article?.author && (
-                                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                <div className="flex items-center text-sm text-gray-900 dark:text-gray-400">
                                     <User className="w-3 h-3 mr-1" />
                                     {article.author}
                                 </div>
@@ -321,7 +321,7 @@ function ArticlePageContent() {
 
                         {/* Article Actions */}
                         <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center text-black dark:text-white justify-between">
                                 <div className="flex items-center space-x-4">
                                     <Button variant="ghost" size="sm">
                                         <Heart className="w-4 h-4 mr-1" />
@@ -375,4 +375,4 @@ export default function ArticlePage() {
             <ArticlePageContent />
         </Suspense>
     )
-} 
+}
