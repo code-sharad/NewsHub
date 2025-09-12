@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { db, bookmarks } from '@/lib/drizzle'
+import { eq, desc, and } from 'drizzle-orm'
 
 export async function GET() {
     try {
@@ -19,12 +20,11 @@ export async function GET() {
             return NextResponse.json({ error: 'Unauthorized - No user ID' }, { status: 401 }) 
         }
 
-        const bookmarks = await prisma.bookmark.findMany({
-            where: { userId: session.user.id },
-            orderBy: { createdAt: 'desc' }
-        })
+        const userBookmarks = await db.select().from(bookmarks)
+            .where(eq(bookmarks.userId, session.user.id))
+            .orderBy(desc(bookmarks.createdAt))
 
-        return NextResponse.json(bookmarks)
+        return NextResponse.json(userBookmarks)
     } catch (error) {
         console.error('Error fetching bookmarks:', error)
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -46,32 +46,28 @@ export async function POST(request: NextRequest) {
         }
 
         // Check if bookmark already exists
-        const existingBookmark = await prisma.bookmark.findUnique({
-            where: {
-                userId_articleUrl: {
-                    userId: session.user.id,
-                    articleUrl: articleUrl
-                }
-            }
-        })
+        const existingBookmark = await db.select().from(bookmarks)
+            .where(and(
+                eq(bookmarks.userId, session.user.id),
+                eq(bookmarks.articleUrl, articleUrl)
+            ))
+            .limit(1)
 
-        if (existingBookmark) {
+        if (existingBookmark.length > 0) {
             return NextResponse.json({ error: 'Article already bookmarked' }, { status: 409 })
         }
 
-        const bookmark = await prisma.bookmark.create({
-            data: {
-                userId: session.user.id,
-                articleUrl,
-                title,
-                description,
-                imageUrl,
-                publisher,
-                tags: tags ? JSON.stringify(tags) : null
-            }
-        })
+        const newBookmark = await db.insert(bookmarks).values({
+            userId: session.user.id,
+            articleUrl,
+            title,
+            description,
+            imageUrl,
+            publisher,
+            tags: tags ? JSON.stringify(tags) : null
+        }).returning()
 
-        return NextResponse.json(bookmark, { status: 201 })
+        return NextResponse.json(newBookmark[0], { status: 201 })
     } catch (error) {
         console.error('Error creating bookmark:', error)
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

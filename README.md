@@ -22,7 +22,7 @@ A comprehensive, modern news discussion platform that aggregates news from multi
 ### 🔧 Technical Features
 - **Next.js 15**: Latest React framework with App Router
 - **TypeScript**: Full type safety throughout the application
-- **Prisma ORM**: Database management with SQLite
+- **Drizzle ORM**: Modern TypeScript database toolkit with PostgreSQL
 - **Tailwind CSS**: Utility-first CSS framework
 - **Server Components**: Optimized performance with React Server Components
 
@@ -31,7 +31,7 @@ A comprehensive, modern news discussion platform that aggregates news from multi
 - **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
 - **UI Components**: shadcn/ui, Radix UI primitives
 - **Authentication**: NextAuth.js with Google Provider
-- **Database**: SQLite with Prisma ORM
+- **Database**: PostgreSQL with Drizzle ORM
 - **API Integration**: Custom news aggregation API
 - **Deployment**: Vercel (recommended)
 
@@ -69,8 +69,8 @@ NEXTAUTH_SECRET=your-super-secret-key-here
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# Database
-DATABASE_URL="file:./dev.db"
+# Database (PostgreSQL)
+DATABASE_URL="postgresql://username:password@localhost:5432/newshub"
 
 # Backend API
 BACKEND_API_URL=https://sharad31-newshub-fast-api.hf.space
@@ -79,11 +79,14 @@ BACKEND_API_URL=https://sharad31-newshub-fast-api.hf.space
 ### 4. Database Setup
 
 ```bash
-# Generate Prisma client
-pnpm dlx prisma generate
+# Generate Drizzle migrations
+pnpm db:generate
 
-# Create database
-pnpm dlx prisma db push
+# Apply migrations to database
+pnpm db:push
+
+# Or migrate with version control
+pnpm db:migrate
 ```
 
 ### 5. Google OAuth Setup
@@ -122,10 +125,11 @@ src/
 ├── lib/                  # Utility functions
 │   ├── api.ts           # News API integration
 │   ├── auth.ts          # NextAuth configuration
-│   ├── prisma.ts        # Database client
+│   ├── drizzle.ts       # Database client
 │   └── utils.ts         # Utility functions
-└── prisma/              # Database schema
-    └── schema.prisma    # Prisma schema definition
+├── db/                  # Database schema
+│   └── schema.ts        # Drizzle schema definition
+└── drizzle/             # Database migrations
 ```
 
 ## API Integration
@@ -182,7 +186,7 @@ NEXTAUTH_URL=https://your-domain.vercel.app
 NEXTAUTH_SECRET=your-production-secret
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://username:password@localhost:5432/newshub"
 BACKEND_API_URL=https://sharad31-newshub-fast-api.hf.space
 ```
 
@@ -191,14 +195,17 @@ BACKEND_API_URL=https://sharad31-newshub-fast-api.hf.space
 ### Database Management
 
 ```bash
-# View database in Prisma Studio
-pnpm dlx prisma studio
+# View database in Drizzle Studio
+pnpm db:studio
 
-# Reset database
-pnpm dlx prisma db push --force-reset
+# Push schema changes to database
+pnpm db:push
 
 # Generate new migration
-pnpm dlx prisma migrate dev --name migration-name
+pnpm db:generate
+
+# Apply migrations
+pnpm db:migrate
 ```
 
 ### Adding New Components

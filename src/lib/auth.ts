@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
-import { PrismaAdapter } from "@next-auth/prisma-adapter"
-import { prismaClient } from "@/lib/prisma"
+import { DrizzleAdapter } from "@auth/drizzle-adapter"
+import { db, users, accounts, sessions, verificationTokens } from "@/lib/drizzle"
 
 declare module "next-auth" {
     interface Session {
@@ -15,7 +15,12 @@ declare module "next-auth" {
 }
 
 export const authOptions: NextAuthOptions = {
-    adapter: PrismaAdapter(prismaClient),
+    adapter: DrizzleAdapter(db, {
+        usersTable: users,
+        accountsTable: accounts,
+        sessionsTable: sessions,
+        verificationTokensTable: verificationTokens,
+    }),
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID!,
