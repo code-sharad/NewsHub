@@ -1,12 +1,27 @@
-import { PrismaClient } from '@prisma/client/index.js'
+import { PrismaClient } from '@prisma/client'
 import { withAccelerate } from '@prisma/extension-accelerate'
 
+type ExtendedPrismaClient = ReturnType<typeof createPrismaClient>
+
 const globalForPrisma = global as unknown as {
-    prisma: PrismaClient
+    prisma: ExtendedPrismaClient | undefined
+    prismaClient: PrismaClient | undefined
 }
 
-const prisma = globalForPrisma.prisma || new PrismaClient().$extends(withAccelerate())
+function createPrismaClient() {
+    return new PrismaClient().$extends(withAccelerate())
+}
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+// Base Prisma client for NextAuth adapter
+const prismaClient = globalForPrisma.prismaClient ?? new PrismaClient()
 
-export { prisma }
+// Extended Prisma client for application use
+const prisma = globalForPrisma.prisma ?? createPrismaClient()
+
+if (process.env.NODE_ENV !== 'production') {
+    globalForPrisma.prisma = prisma
+    globalForPrisma.prismaClient = prismaClient
+}
+
+export { prisma, prismaClient }
+export type { ExtendedPrismaClient }
