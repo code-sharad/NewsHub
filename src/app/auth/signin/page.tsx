@@ -21,7 +21,7 @@ export default function SignInPage() {
       <div className="container mx-auto flex h-screen w-screen flex-col items-center justify-center">
         <Card className="mx-auto max-w-sm">
           <CardHeader>
-            <CardTitle className="text-2xl">Sign In</CardTitle>
+           <CardTitle className="text-2xl">Sign In</CardTitle>
             <CardDescription>Sign in to your NewsHub account</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
