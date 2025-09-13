@@ -231,7 +231,7 @@ function ArticlePageContent() {
                                 href={articleUrl || '#'}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center text-white "
+                                className="flex items-center text-black "
                             >
                                 <ExternalLink className="w-4 h-4 mr-1" />
                                 Original
