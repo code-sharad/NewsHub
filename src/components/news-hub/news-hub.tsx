@@ -251,8 +251,8 @@ export function NewsHub() {
                                         </div>
                                     )}
 
-                                    {/* Show skeleton when fetching category news or when loading more articles */}
-                                    {(selectedCategory !== 'all' && categoryQuery.isLoading) ? (
+                                    {/* Show skeleton when fetching category news AND no articles are available */}
+                                    {(selectedCategory !== 'all' && categoryQuery.isLoading && visibleArticles.length === 0) ? (
                                         <div className="h-full dot-grid-bg mt-12 p-6">
                                             <div className="max-w-6xl mx-auto space-y-4">
                                                 <div className="text-center mb-6">
@@ -275,8 +275,8 @@ export function NewsHub() {
                                                 searchQuery={searchQuery}
                                             />
 
-                                            {/* Loading skeletons while fetching more */}
-                                            {isLoading && hasPartialData && (
+                                            {/* Loading skeletons while fetching more - only show if articles are already visible */}
+                                            {isLoading && hasPartialData && visibleArticles.length > 0 && (
                                                 <div className="h-full dot-grid-bg mt-12 p-6">
                                                     <div className="max-w-6xl mx-auto space-y-4">
                                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -297,7 +297,7 @@ export function NewsHub() {
                     </div>
 
                     {/* Load More Button - Positioned INSIDE main but after the content container */}
-                    {/* {hasMoreArticles && !(selectedCategory !== 'all' && categoryQuery.isLoading) && (
+                    {hasMoreArticles && visibleArticles.length > 0 && !(selectedCategory !== 'all' && categoryQuery.isLoading) && (
                         <div className="bg-background border-t border-border/10">
                             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                                 <div className="flex flex-col items-center space-y-4">
@@ -331,10 +331,10 @@ export function NewsHub() {
                                 </div>
                             </div>
                         </div>
-                    )} */}
+                    )}
 
                     {/* End of feed message - Also positioned INSIDE main */}
-                    {/* {!hasMoreArticles && visibleArticles.length > 0 && !(selectedCategory !== 'all' && categoryQuery.isLoading) && (
+                    {!hasMoreArticles && visibleArticles.length > 0 && !(selectedCategory !== 'all' && categoryQuery.isLoading) && (
                         <div className="bg-background border-t border-border/10">
                             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                                 <div className={cn(
@@ -350,7 +350,7 @@ export function NewsHub() {
                                 </div>
                             </div>
                         </div>
-                    )} */}
+                    )}
 
                 </main>
             </div>
