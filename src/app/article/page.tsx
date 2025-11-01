@@ -253,11 +253,11 @@ function ArticlePageContent() {
                     url: articleUrl,
                     content: stripHtml(article?.content || '')
                 }
-           
+
 
                 // Call LLM API to generate analysis
                 // The API expects the fields directly in the root object, not nested
-                const llmResponse = await fetch(`${process.env.NEWS_AGENT_URL}/api/analyze-news`, {
+                const llmResponse = await fetch(`https://sharad31-news-agent.hf.space/api/analyze-news`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -280,7 +280,7 @@ function ArticlePageContent() {
                             url: articleUrl
                         }),
                     })
-                    
+
                     const saveData = await saveResponse.json()
                     if (saveResponse.ok) {
                         toast({
