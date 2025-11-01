@@ -6,6 +6,7 @@ import {
   integer,
   unique,
   primaryKey,
+  jsonb,
 } from 'drizzle-orm/pg-core'
 import { createId } from '@paralleldrive/cuid2'
 import { relations } from 'drizzle-orm'
@@ -134,6 +135,15 @@ export const votes = pgTable(
   })
 )
 
+// Article Analysis table
+export const articleAnalyses = pgTable('ArticleAnalysis', {
+  id: cuidPrimaryKey(),
+  articleUrl: text('articleUrl').notNull().unique(),
+  analysisData: jsonb('analysisData').notNull(),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow().$onUpdateFn(() => new Date()),
+})
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
@@ -226,3 +236,5 @@ export type Comment = typeof comments.$inferSelect
 export type NewComment = typeof comments.$inferInsert
 export type Vote = typeof votes.$inferSelect
 export type NewVote = typeof votes.$inferInsert
+export type ArticleAnalysis = typeof articleAnalyses.$inferSelect
+export type NewArticleAnalysis = typeof articleAnalyses.$inferInsert

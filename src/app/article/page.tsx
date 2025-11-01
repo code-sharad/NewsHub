@@ -12,7 +12,8 @@ import {
     User,
     MessageSquare,
     Heart,
-    Eye
+    Eye,
+    Brain
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -21,6 +22,8 @@ import { Separator } from '@/components/ui/separator'
 import { useToast } from '@/hooks/use-toast'
 import { formatDistanceToNow } from 'date-fns'
 import Image from 'next/image'
+import { ResizablePanel } from '@/components/ui/resizable-panel'
+import { ArticleAnalysisDisplay } from '@/components/article-analysis'
 
 interface ArticleContent {
     title?: string
@@ -43,6 +46,10 @@ function ArticlePageContent() {
     const [loading, setLoading] = useState(true)
     const [bookmarked, setBookmarked] = useState(false)
     const [bookmarking, setBookmarking] = useState(false)
+    const [showAnalysis, setShowAnalysis] = useState(false)
+    const [analysis, setAnalysis] = useState<any>(null)
+    const [analysisLoading, setAnalysisLoading] = useState(false)
+    const [analysisError, setAnalysisError] = useState<string | null>(null)
 
     const articleUrl = searchParams.get('url')
     const originalTitle = searchParams.get('title')
@@ -184,6 +191,129 @@ function ArticlePageContent() {
         }
     }
 
+    const handleAnalyzeArticle = async () => {
+        if (!articleUrl) return
+
+        setShowAnalysis(true)
+        setAnalysisLoading(true)
+        setAnalysisError(null)
+
+        try {
+            // Helper function to strip HTML tags from content
+            const stripHtml = (html: string) => {
+                if (!html) return ''
+                const tmp = document.createElement('DIV')
+                tmp.innerHTML = html
+                return tmp.textContent || tmp.innerText || ''
+            }
+
+            // Helper function to format date to DD-MM-YYYY format
+            const formatDate = (dateString: string) => {
+                if (!dateString) return new Date().toLocaleDateString('en-GB').replace(/\//g, '-')
+                try {
+                    const date = new Date(dateString)
+                    const day = String(date.getDate()).padStart(2, '0')
+                    const month = String(date.getMonth() + 1).padStart(2, '0')
+                    const year = date.getFullYear()
+                    return `${day}-${month}-${year}`
+                } catch {
+                    return dateString
+                }
+            }
+
+            // First, check if analysis exists in database (POST route - NO LLM CALL)
+            const checkResponse = await fetch('/api/article-analysis', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ url: articleUrl }),
+            })
+
+            if (checkResponse.ok) {
+                // Analysis found in database - use cached version
+                const cachedData = await checkResponse.json()
+                setAnalysis(cachedData.analysis)
+                toast({
+                    title: "Analysis loaded",
+                    description: "Using cached analysis from database (no LLM call needed).",
+                })
+                return
+            }
+
+            // Analysis not found in database - need to call LLM
+            if (checkResponse.status === 404) {
+                // Prepare article data for analysis
+                console.log(article)
+                const articleData = {
+                    headline: article?.title || originalTitle || '',
+                    summary: article?.summary || '',
+                    source: originalSource || '',
+                    date: formatDate(article?.publishedDate || originalDate || ''),
+                    url: articleUrl,
+                    content: stripHtml(article?.content || '')
+                }
+           
+
+                // Call LLM API to generate analysis
+                // The API expects the fields directly in the root object, not nested
+                const llmResponse = await fetch(`${process.env.NEWS_AGENT_URL}/api/analyze-news`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(articleData),
+                })
+
+                const llmData = await llmResponse.json()
+
+                if (llmResponse.ok) {
+                    // Save analysis to database using POST route
+                    setAnalysis(llmData)
+                    const saveResponse = await fetch('/api/article-analysis', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            articleData: llmData,
+                            url: articleUrl
+                        }),
+                    })
+                    
+                    const saveData = await saveResponse.json()
+                    if (saveResponse.ok) {
+                        toast({
+                            title: "Analysis complete",
+                            description: "Article analyzed and saved to database.",
+                        })
+                    } else {
+                        console.warn('Failed to save to database:', saveData.error)
+                        toast({
+                            title: "Analysis complete",
+                            description: "Analysis generated but failed to save to database.",
+                            variant: "default"
+                        })
+                    }
+                } else {
+                    throw new Error(llmData.error || 'Failed to analyze article')
+                }
+            } else {
+                throw new Error('Failed to check database for existing analysis')
+            }
+        } catch (error) {
+            console.error('Error analyzing article:', error)
+            setAnalysisError(error instanceof Error ? error.message : 'Failed to analyze article')
+            toast({
+                title: "Error",
+                description: "Failed to analyze article. Please try again.",
+                variant: "destructive",
+            })
+        } finally {
+            setAnalysisLoading(false)
+        }
+    }
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -197,6 +327,39 @@ function ArticlePageContent() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            {/* Floating Analysis Button */}
+            {!showAnalysis && articleUrl && (
+                <Button
+                    onClick={handleAnalyzeArticle}
+                    className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl z-50 flex items-center justify-center bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white p-0 transition-all hover:scale-110"
+                    size="icon"
+                    aria-label="Analyze Article"
+                >
+                    <Brain className="h-6 w-6" />
+                </Button>
+            )}
+
+            {/* Analysis Sidebar */}
+            {showAnalysis && (
+                <ResizablePanel
+                    title="Article Analysis"
+                    onClose={() => {
+                        setShowAnalysis(false)
+                        setAnalysis(null)
+                        setAnalysisError(null)
+                    }}
+                    defaultWidth={50}
+                    minWidth={30}
+                    maxWidth={70}
+                >
+                    <ArticleAnalysisDisplay
+                        analysis={analysis}
+                        loading={analysisLoading}
+                        error={analysisError}
+                    />
+                </ResizablePanel>
+            )}
+
             {/* Header */}
             <div className="bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 px-4 py-4">
                 <div className="max-w-4xl mx-auto flex items-center justify-between">

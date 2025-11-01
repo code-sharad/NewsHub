@@ -15,6 +15,13 @@
       "when": 1757667522494,
       "tag": "0001_amusing_black_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1761949522767,
+      "tag": "0002_greedy_lester",
+      "breakpoints": true
     }
   ]
 }
