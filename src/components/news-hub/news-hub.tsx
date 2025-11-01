@@ -41,23 +41,22 @@ export function NewsHub() {
     // Determine which articles to use
     const articlesToUse = useMemo(() => {
         if (selectedCategory !== 'all' && categoryQuery.data) {
-            // Use category-specific articles and transform to match NewsArticle interface
+            // Use category-specific articles and add source info
             return categoryQuery.data.items.map(item => ({
-                news_title: item.news_title,
-                news_publication_date: item.news_publication_date,
-                news_image: item.news_image || undefined, // Convert null to undefined
-                publisher: item.publisher,
-                last_mode: item.last_mode || '',
-                loc: item.loc,
+                ...item,
                 source: 'thehindu' as const // Default source, could be extracted from publisher
             }))
         }
         return allArticles
     }, [selectedCategory, categoryQuery.data, allArticles])
 
-    // Show loading screen only on initial load (when no data at all)
+    // Show loading screen on initial load
     if (isLoading && !hasPartialData && selectedCategory === 'all') {
         return <LoadingScreen message="Fetching the latest news..." />
+    }
+
+    if (selectedCategory !== 'all' && categoryQuery.isLoading) {
+        return <LoadingScreen message={`Fetching ${selectedCategory} news...`} />
     }
 
     // Prepare articles for display
@@ -133,9 +132,7 @@ export function NewsHub() {
                         <LeftSidebar
                             sources={['thehindu', 'indianexpress', 'economictimes']}
                             selectedSource={selectedSource === 'all' ? null : selectedSource}
-                            selectedCategory={selectedCategory}
                             onSourceSelect={handleSourceFilter}
-                            onCategorySelect={handleCategoryFilter}
                             isCollapsed={sidebarCollapsed}
                         />
                     </div>
@@ -161,9 +158,7 @@ export function NewsHub() {
                         <LeftSidebar
                             sources={['thehindu', 'indianexpress', 'economictimes']}
                             selectedSource={selectedSource === 'all' ? null : selectedSource}
-                            selectedCategory={selectedCategory}
                             onSourceSelect={handleSourceFilter}
-                            onCategorySelect={handleCategoryFilter}
                             isCollapsed={false}
                         />
                     </SheetContent>
@@ -236,122 +231,82 @@ export function NewsHub() {
                                 </div>
                             ) : (
                                 <>
-                                    {/* Category Header */}
-                                    {selectedCategory !== 'all' && (
-                                        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                                            <div className="flex items-center gap-3 mb-4">
-                                                <div className="h-8 w-1 bg-gradient-to-b from-primary to-accent rounded-full"></div>
-                                                <h2 className="text-2xl font-bold capitalize text-foreground">
-                                                    {selectedCategory} News
-                                                </h2>
-                                                <div className="text-sm text-muted-foreground bg-card border border-border rounded-full px-3 py-1">
-                                                    {filteredArticles.length} articles
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
+                                    <NewsFeed
+                                        articles={visibleArticles}
+                                        searchQuery={searchQuery}
+                                    />
 
-                                    {/* Show skeleton when fetching category news AND no articles are available */}
-                                    {(selectedCategory !== 'all' && categoryQuery.isLoading && visibleArticles.length === 0) ? (
+                                    {/* Loading skeletons while fetching more */}
+                                    {isLoading && hasPartialData && (
                                         <div className="h-full dot-grid-bg mt-12 p-6">
                                             <div className="max-w-6xl mx-auto space-y-4">
-                                                <div className="text-center mb-6">
-                                                    <div className="inline-flex items-center gap-2 text-muted-foreground">
-                                                        <RefreshCw className="w-4 h-4 animate-spin" />
-                                                        Fetching {selectedCategory} news...
-                                                    </div>
-                                                </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                                     {[...Array(6)].map((_, i) => (
-                                                        <NewsCardSkeleton key={`category-skeleton-${i}`} />
+                                                        <NewsCardSkeleton key={`skeleton-${i}`} />
                                                     ))}
                                                 </div>
                                             </div>
                                         </div>
-                                    ) : (
-                                        <>
-                                            <NewsFeed
-                                                articles={visibleArticles}
-                                                searchQuery={searchQuery}
-                                            />
-
-                                            {/* Loading skeletons while fetching more - only show if articles are already visible */}
-                                            {isLoading && hasPartialData && visibleArticles.length > 0 && (
-                                                <div className="h-full dot-grid-bg mt-12 p-6">
-                                                    <div className="max-w-6xl mx-auto space-y-4">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                                            {[...Array(6)].map((_, i) => (
-                                                                <NewsCardSkeleton key={`skeleton-${i}`} />
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                        </>
                                     )}
+
+                                    {/* End of feed message */}
+                                    {!hasMoreArticles && visibleArticles.length > 0 && (
+                                        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                                            <div className={cn(
+                                                "text-center glass-card border-primary/20",
+                                                "animate-fade-in-up"
+                                            )}>
+                                                <div className="text-gradient-primary text-xl font-semibold mb-3">
+                                                    You&apos;re all caught up! 🎉
+                                                </div>
+                                                <p className="text-muted-foreground">
+                                                    You&apos;ve seen all {filteredArticles.length} articles. Check back later for more news.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Load More Button */}
+                                    <div>
+                                        {hasMoreArticles && (
+                                            <div className=" max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                                                <div className="text-center space-y-6">
+                                                    <Button
+                                                        onClick={handleLoadMore}
+                                                        size="lg"
+                                                        disabled={isLoading}
+                                                        className={cn(
+                                                            "px-8 py-3 rounded-xl font-medium w-full max-w-sm",
+                                                            "bg-gradient-to-r from-primary to-accent text-primary-foreground",
+                                                            "hover:scale-105 transition-all duration-300",
+                                                            "shadow-glow hover:shadow-neon",
+                                                            "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                                        )}
+                                                    >
+                                                        {isLoading ? (
+                                                            <>
+                                                                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                                                                Loading...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <TrendingUp className="w-4 h-4 mr-2" />
+                                                                Load More Articles
+                                                            </>
+                                                        )}
+                                                    </Button>
+
+                                                    <p className="text-xs text-muted-foreground mt-4">
+                                                        Showing {visibleArticles.length} of {filteredArticles.length} articles
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </>
                             )}
-
                         </div>
                     </div>
-
-                    {/* Load More Button - Positioned INSIDE main but after the content container */}
-                    {hasMoreArticles && visibleArticles.length > 0 && !(selectedCategory !== 'all' && categoryQuery.isLoading) && (
-                        <div className="bg-background border-t border-border/10">
-                            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                                <div className="flex flex-col items-center space-y-4">
-                                    <Button
-                                        onClick={handleLoadMore}
-                                        size="lg"
-                                        disabled={isLoading || (selectedCategory !== 'all' && categoryQuery.isLoading)}
-                                        className={cn(
-                                            "min-w-[200px] px-8 py-3 rounded-lg font-medium",
-                                            "bg-primary hover:bg-primary/90 text-primary-foreground",
-                                            "transition-all duration-200 shadow-md hover:shadow-lg",
-                                            "disabled:opacity-50 disabled:cursor-not-allowed"
-                                        )}
-                                    >
-                                        {(isLoading || (selectedCategory !== 'all' && categoryQuery.isLoading)) ? (
-                                            <>
-                                                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                                                Loading...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <TrendingUp className="w-4 h-4 mr-2" />
-                                                Load More Articles
-                                            </>
-                                        )}
-                                    </Button>
-
-                                    <p className="text-sm text-muted-foreground text-center">
-                                        Showing {visibleArticles.length} of {filteredArticles.length} articles
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* End of feed message - Also positioned INSIDE main */}
-                    {!hasMoreArticles && visibleArticles.length > 0 && !(selectedCategory !== 'all' && categoryQuery.isLoading) && (
-                        <div className="bg-background border-t border-border/10">
-                            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                                <div className={cn(
-                                    "text-center glass-card border-primary/20",
-                                    "animate-fade-in-up"
-                                )}>
-                                    <div className="text-gradient-primary text-xl font-semibold mb-3">
-                                        You&apos;re all caught up! 🎉
-                                    </div>
-                                    <p className="text-muted-foreground">
-                                        You&apos;ve seen all {filteredArticles.length} articles. Check back later for more news.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
                 </main>
             </div>
 

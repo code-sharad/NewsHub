@@ -15,17 +15,7 @@ import {
     Sparkles,
     Calendar,
     Archive,
-    Star,
-    Building2,
-    Monitor,
-    Briefcase,
-    Trophy,
-    Music,
-    Heart,
-    Microscope,
-    Earth,
-    MapPin,
-    MessageSquare
+    Star
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -37,25 +27,15 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { NewsCategory } from '@/types/news'
 
 interface LeftSidebarProps {
     sources: string[]
     selectedSource: string | null
-    selectedCategory: NewsCategory | 'all'
     onSourceSelect: (source: string | null) => void
-    onCategorySelect: (category: NewsCategory | 'all') => void
     isCollapsed?: boolean
 }
 
-export function LeftSidebar({
-    sources,
-    selectedSource,
-    selectedCategory,
-    onSourceSelect,
-    onCategorySelect,
-    isCollapsed = false
-}: LeftSidebarProps) {
+export function LeftSidebar({ sources, selectedSource, onSourceSelect, isCollapsed = false }: LeftSidebarProps) {
     const { data: session } = useSession()
     const router = useRouter()
     const [bookmarkCount, setBookmarkCount] = useState(0)
@@ -112,16 +92,12 @@ export function LeftSidebar({
     ]
 
     const quickTopics = [
-        { name: 'politics' as NewsCategory, count: 45, icon: Building2, color: 'text-blue-600' },
-        { name: 'technology' as NewsCategory, count: 32, icon: Monitor, color: 'text-purple-600' },
-        { name: 'business' as NewsCategory, count: 28, icon: Briefcase, color: 'text-green-600' },
-        { name: 'sports' as NewsCategory, count: 19, icon: Trophy, color: 'text-orange-600' },
-        { name: 'entertainment' as NewsCategory, count: 15, icon: Music, color: 'text-pink-600' },
-        { name: 'health' as NewsCategory, count: 12, icon: Heart, color: 'text-red-600' },
-        { name: 'science' as NewsCategory, count: 8, icon: Microscope, color: 'text-cyan-600' },
-        { name: 'world' as NewsCategory, count: 25, icon: Earth, color: 'text-indigo-600' },
-        { name: 'india' as NewsCategory, count: 18, icon: MapPin, color: 'text-amber-600' },
-        { name: 'opinion' as NewsCategory, count: 14, icon: MessageSquare, color: 'text-slate-600' },
+        { name: 'Politics', count: 45, icon: '🏛️' },
+        { name: 'Technology', count: 32, icon: '💻' },
+        { name: 'Business', count: 28, icon: '💼' },
+        { name: 'Sports', count: 19, icon: '⚽' },
+        { name: 'Health', count: 15, icon: '🏥' },
+        { name: 'Science', count: 12, icon: '🔬' },
     ]
 
     const formatSourceName = (source: string) => {
@@ -262,7 +238,7 @@ export function LeftSidebar({
                                                 size="icon"
                                                 className="w-6 h-6 text-xs rounded-md"
                                             >
-                                                <topic.icon className="w-4 h-4" />
+                                                <span className="text-sm">{topic.icon}</span>
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent side="right" className="ml-2">
@@ -403,38 +379,20 @@ export function LeftSidebar({
                         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                             Popular Topics
                         </h3>
-                        <div className="space-y-1">
-                            <Button
-                                variant={selectedCategory === 'all' ? "secondary" : "ghost"}
-                                className={cn(
-                                    "w-full justify-start gap-3 h-auto p-3 rounded-xl transition-all duration-200",
-                                    selectedCategory === 'all' && "bg-primary/10 text-primary hover:bg-primary/15"
-                                )}
-                                onClick={() => onCategorySelect('all')}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <Globe className="w-4 h-4" />
-                                    <span className="text-sm font-medium">All Topics</span>
-                                </div>
-                            </Button>
-
+                        <div className="grid grid-cols-2 gap-2">
                             {quickTopics.map((topic) => (
                                 <Button
                                     key={topic.name}
-                                    variant={selectedCategory === topic.name ? "secondary" : "ghost"}
-                                    className={cn(
-                                        "w-full justify-between h-auto p-3 rounded-xl transition-all duration-200 group",
-                                        selectedCategory === topic.name && "bg-primary/10 text-primary hover:bg-primary/15"
-                                    )}
-                                    onClick={() => onCategorySelect(topic.name)}
+                                    variant="ghost"
+                                    className="h-auto p-3 rounded-xl hover:bg-muted/50 group transition-all duration-200"
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <topic.icon className={cn("w-4 h-4", topic.color)} />
-                                        <span className="text-sm font-medium capitalize">{topic.name}</span>
+                                    <div className="text-center space-y-1">
+                                        <div className="text-lg">{topic.icon}</div>
+                                        <div className="text-xs font-medium">{topic.name}</div>
+                                        <Badge variant="secondary" className="text-xs bg-muted-foreground/10">
+                                            {topic.count}
+                                        </Badge>
                                     </div>
-                                    <Badge variant="secondary" className="text-xs bg-muted-foreground/10">
-                                        {topic.count}
-                                    </Badge>
                                 </Button>
                             ))}
                         </div>

@@ -5,14 +5,13 @@ const BACKEND_URL = process.env.BACKEND_API_URL || 'https://sharad31-newshub-fas
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ category: string }> }
+  { params }: { params: { category: string } }
 ) {
   try {
-    const { category } = await params
-    const categoryLower = category.toLowerCase()
+    const category = params.category.toLowerCase()
 
     // Validate category
-    if (!NEWS_CATEGORIES.includes(categoryLower as NewsCategory)) {
+    if (!NEWS_CATEGORIES.includes(category as NewsCategory)) {
       return NextResponse.json(
         {
           error: "Invalid category",
@@ -28,7 +27,7 @@ export async function GET(
 
     // Fetch news from backend API
     const response = await fetch(
-      `${BACKEND_URL}/news/by-category/${categoryLower}?limit=${limit}&offset=${offset}`,
+      `${BACKEND_URL}/news/by-category/${category}?limit=${limit}&offset=${offset}`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -45,7 +44,7 @@ export async function GET(
 
     // Transform the data to match the expected output format
     const transformedData = {
-      category: categoryLower,
+      category: category,
       count: data.items?.length || 0,
       items: data.items?.map((item: any) => ({
         news_title: item.news_title,
@@ -54,7 +53,7 @@ export async function GET(
         publisher: item.publisher,
         last_mode: item.last_mode,
         loc: item.loc,
-        category: categoryLower
+        category: category
       })) || []
     }
 
