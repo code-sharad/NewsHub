@@ -42,8 +42,14 @@ export function NewsHub() {
     const articlesToUse = useMemo(() => {
         if (selectedCategory !== 'all' && categoryQuery.data) {
             // Use category-specific articles and add source info
+            // Convert NewsItem to NewsArticle format (null -> undefined)
             return categoryQuery.data.items.map(item => ({
-                ...item,
+                news_title: item.news_title,
+                news_publication_date: item.news_publication_date,
+                news_image: item.news_image ?? undefined,
+                publisher: item.publisher,
+                last_mode: item.last_mode ?? '',
+                loc: item.loc,
                 source: 'thehindu' as const // Default source, could be extracted from publisher
             }))
         }

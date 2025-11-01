@@ -5,10 +5,11 @@ const BACKEND_URL = process.env.BACKEND_API_URL || 'https://sharad31-newshub-fas
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { category: string } }
+  { params }: { params: Promise<{ category: string }> }
 ) {
   try {
-    const category = params.category.toLowerCase()
+    const { category: categoryParam } = await params
+    const category = categoryParam.toLowerCase()
 
     // Validate category
     if (!NEWS_CATEGORIES.includes(category as NewsCategory)) {
