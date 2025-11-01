@@ -60,38 +60,38 @@ export function ResizablePanel({
   return (
     <div
       ref={panelRef}
-      className="fixed top-0 right-0 h-full bg-white dark:bg-gray-950 border-l border-gray-200 dark:border-gray-800 shadow-xl z-50 flex flex-col"
+      className="fixed top-0 right-0 h-full bg-white dark:bg-gray-950 border-l border-gray-200 dark:border-gray-800 shadow-2xl z-50 flex flex-col"
       style={{ width: `${width}%` }}
     >
       {/* Resize Handle */}
       <div
-        className="absolute left-0 top-0 w-2 h-full cursor-col-resize hover:bg-blue-500 transition-colors z-10 group"
+        className="absolute left-0 top-0 w-1.5 h-full cursor-col-resize hover:bg-black dark:hover:bg-white transition-colors z-10 group"
         onMouseDown={(e) => {
           e.preventDefault()
           setIsResizing(true)
         }}
       >
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-16 bg-gray-300 dark:bg-gray-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-20 bg-gray-300 dark:bg-gray-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+      <div className="flex items-center justify-between px-8 py-6 border-b border-gray-200 dark:border-gray-800 flex-shrink-0 bg-white dark:bg-gray-950">
+        <h2 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
           {title}
         </h2>
         <Button
           variant="ghost"
           size="sm"
           onClick={onClose}
-          className="h-8 w-8 p-0"
+          className="h-9 w-9 p-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         >
-          <X className="h-4 w-4" />
+          <X className="h-5 w-5" />
         </Button>
       </div>
 
       {/* Content */}
       <ScrollArea className="flex-1">
-        <div className="p-4">{children}</div>
+        <div className="px-8 py-6">{children}</div>
       </ScrollArea>
     </div>
   )

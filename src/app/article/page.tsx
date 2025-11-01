@@ -329,14 +329,22 @@ function ArticlePageContent() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             {/* Floating Analysis Button */}
             {!showAnalysis && articleUrl && (
-                <Button
-                    onClick={handleAnalyzeArticle}
-                    className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-2xl z-50 flex items-center justify-center bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white p-0 transition-all hover:scale-110"
-                    size="icon"
-                    aria-label="Analyze Article"
-                >
-                    <Brain className="h-6 w-6" />
-                </Button>
+                <div className="fixed bottom-8 right-8 z-50 group">
+                    <Button
+                        onClick={handleAnalyzeArticle}
+                        className="h-14 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 
+                        bg-black dark:bg-white text-white dark:text-black 
+                        hover:bg-gray-800 dark:hover:bg-gray-100
+                        flex items-center gap-3 font-medium
+                        group-hover:scale-105 transform"
+                        aria-label="Analyze Article with AI"
+                    >
+                        <Brain className="h-5 w-5 group-hover:rotate-12 transition-transform duration-200" />
+                        <span className="text-sm">AI Analysis</span>
+                    </Button>
+                    {/* Subtle glow effect */}
+                    <div className="absolute inset-0 rounded-full bg-blue-500/20 dark:bg-blue-400/20 blur-xl -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                </div>
             )}
 
             {/* Analysis Sidebar */}

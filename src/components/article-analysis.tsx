@@ -4,7 +4,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Loader2, Clock, Users, TrendingUp, CheckCircle2, FileText } from 'lucide-react'
+import { 
+  Loader2, 
+  Clock, 
+  Users, 
+  TrendingUp, 
+  CheckCircle2, 
+  FileText,
+  History,
+  Target,
+  AlertCircle,
+  Sparkles,
+  ChevronRight
+} from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -41,13 +53,22 @@ interface ArticleAnalysisProps {
 export function ArticleAnalysisDisplay({ analysis, loading, error }: ArticleAnalysisProps) {
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
-          <p className="text-gray-600 dark:text-gray-400">Analyzing article...</p>
-          <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
-            This may take a moment
-          </p>
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center space-y-4">
+          <div className="relative">
+            <div className="w-16 h-16 mx-auto">
+              <Loader2 className="h-16 w-16 animate-spin text-black dark:text-white" />
+            </div>
+            <Sparkles className="h-5 w-5 absolute top-0 right-1/4 text-blue-500 animate-pulse" />
+          </div>
+          <div className="space-y-2">
+            <p className="text-base font-medium text-gray-900 dark:text-gray-100">
+              Analyzing article with AI
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Our agents are examining historical context, stakeholders, and impacts...
+            </p>
+          </div>
         </div>
       </div>
     )
@@ -56,21 +77,34 @@ export function ArticleAnalysisDisplay({ analysis, loading, error }: ArticleAnal
   if (error) {
     return (
       <div className="py-12">
-        <Card className="border-red-200 dark:border-red-800">
-          <CardContent className="pt-6">
-            <p className="text-red-600 dark:text-red-400">{error}</p>
-          </CardContent>
-        </Card>
+        <div className="max-w-2xl mx-auto">
+          <div className="rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 p-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" />
+              <div>
+                <h3 className="text-sm font-semibold text-red-900 dark:text-red-100 mb-1">
+                  Analysis Failed
+                </h3>
+                <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
 
   if (!analysis) {
     return (
-      <div className="py-12">
-        <p className="text-gray-600 dark:text-gray-400 text-center">
-          No analysis available
-        </p>
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center space-y-3">
+          <div className="w-12 h-12 mx-auto rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <FileText className="h-6 w-6 text-gray-400 dark:text-gray-600" />
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            No analysis available
+          </p>
+        </div>
       </div>
     )
   }
@@ -90,105 +124,136 @@ export function ArticleAnalysisDisplay({ analysis, loading, error }: ArticleAnal
 
   return (
     <ScrollArea className="h-full">
-      <div className="space-y-6 pb-6">
-        {/* Status Badge */}
-        {analysis.status && (
-          <div className="flex items-center gap-2">
-            <Badge variant={analysis.status === 'success' ? 'default' : 'destructive'}>
-              {analysis.status}
-            </Badge>
-            {analysis.processingTime && (
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                Processed in {(analysis.processingTime / 1000).toFixed(1)}s
-              </span>
+      <div className="space-y-8 pb-8 px-1">
+        {/* Header Section with Status */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">
+              Analysis Report
+            </h2>
+            {analysis.status && (
+              <Badge 
+                variant={analysis.status === 'success' ? 'default' : 'destructive'}
+                className="font-medium"
+              >
+                {analysis.status}
+              </Badge>
             )}
           </div>
-        )}
+          
+          {analysis.processingTime && (
+            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-500">
+              <Clock className="h-3.5 w-3.5" />
+              <span>Analyzed in {(analysis.processingTime / 1000).toFixed(1)}s</span>
+            </div>
+          )}
+        </div>
 
-        {/* Shared Context - Topics */}
+        {/* Key Topics Section */}
         {sharedContext?.topics && sharedContext.topics.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
+          <section className="space-y-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 Key Topics
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {sharedContext.topics.map((topic, index) => (
-                  <Badge key={index} variant="outline" className="text-sm">
-                    {topic}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+              </h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {sharedContext.topics.map((topic, index) => (
+                <Badge 
+                  key={index} 
+                  variant="secondary" 
+                  className="px-3 py-1.5 text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 border-0"
+                >
+                  {topic}
+                </Badge>
+              ))}
+            </div>
+          </section>
         )}
 
-        {/* Shared Context - Stakeholders */}
+        {/* Key Stakeholders Section */}
         {sharedContext?.stakeholders && sharedContext.stakeholders.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Users className="h-5 w-5" />
+          <section className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 Key Stakeholders
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {sharedContext.stakeholders.map((stakeholder, index) => (
-                  <Badge key={index} variant="secondary" className="text-sm">
-                    {stakeholder}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+              </h3>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {sharedContext.stakeholders.map((stakeholder, index) => (
+                <Badge 
+                  key={index} 
+                  variant="outline" 
+                  className="px-3 py-1.5 text-sm font-medium border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300"
+                >
+                  {stakeholder}
+                </Badge>
+              ))}
+            </div>
+          </section>
         )}
 
         {/* Synthesized Report */}
         {synthesizedReport && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Comprehensive Report
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:font-semibold prose-h2:text-xl prose-h2:mt-6 prose-h2:mb-3 prose-h3:text-lg prose-h3:mt-4 prose-h3:mb-2 prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:text-sm prose-p:leading-relaxed prose-strong:text-gray-900 dark:prose-strong:text-gray-100 prose-ul:list-disc prose-ol:list-decimal prose-li:my-2">
+          <section className="space-y-4">
+            <div className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Comprehensive Analysis
+              </h3>
+            </div>
+            <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-gradient-to-br from-white to-gray-50/50 dark:from-gray-900 dark:to-gray-900/50 p-6">
+              <div className="prose prose-sm dark:prose-invert max-w-none 
+                prose-headings:font-semibold prose-headings:tracking-tight
+                prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-4 prose-h2:text-gray-900 dark:prose-h2:text-gray-100
+                prose-h3:text-base prose-h3:mt-6 prose-h3:mb-3 prose-h3:text-gray-800 dark:prose-h3:text-gray-200
+                prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:leading-relaxed prose-p:text-[15px]
+                prose-strong:text-gray-900 dark:prose-strong:text-gray-100 prose-strong:font-semibold
+                prose-ul:my-4 prose-ol:my-4
+                prose-li:text-gray-700 dark:prose-li:text-gray-300 prose-li:my-1.5 prose-li:text-[15px]
+                prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline
+                prose-code:text-gray-900 dark:prose-code:text-gray-100 prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
+                first:prose-p:mt-0 last:prose-p:mb-0">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {synthesizedReport}
                 </ReactMarkdown>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         )}
 
-        {/* Shared Context - Timeline */}
+        {/* Timeline Section */}
         {sharedContext?.timeline && sharedContext.timeline.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Clock className="h-5 w-5" />
+          <section className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 Timeline
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+              </h3>
+            </div>
+            <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
+              <div className="space-y-6">
                 {sharedContext.timeline.map((item, index) => (
-                  <div key={index} className="relative pl-6 border-l-2 border-blue-200 dark:border-blue-800">
-                    <div className="absolute -left-2 top-0 w-4 h-4 rounded-full bg-blue-600"></div>
-                    <div className="pb-4">
-                      <p className="font-semibold text-sm text-blue-600 dark:text-blue-400 mb-1">
+                  <div key={index} className="relative pl-8">
+                    {/* Timeline line */}
+                    {index !== (sharedContext.timeline?.length ?? 0) - 1 && (
+                      <div className="absolute left-[7px] top-6 bottom-0 w-[2px] bg-gradient-to-b from-blue-500 to-blue-300 dark:from-blue-600 dark:to-blue-800" />
+                    )}
+                    
+                    {/* Timeline dot */}
+                    <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-blue-500 dark:bg-blue-600 ring-4 ring-white dark:ring-gray-900" />
+                    
+                    <div className="space-y-1.5">
+                      <time className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
                         {item.date}
-                      </p>
-                      <p className="text-gray-700 dark:text-gray-300 text-sm mb-1">
+                      </time>
+                      <p className="text-[15px] font-medium text-gray-900 dark:text-gray-100 leading-snug">
                         {item.event}
                       </p>
                       {item.significance && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                           {item.significance}
                         </p>
                       )}
@@ -196,56 +261,98 @@ export function ArticleAnalysisDisplay({ analysis, loading, error }: ArticleAnal
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         )}
 
         {/* Agent Analyses in Tabs */}
         {agentAnalyses.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Detailed Agent Analyses</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <section className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Detailed Agent Insights
+              </h3>
+            </div>
+            
+            <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden">
               <Tabs defaultValue={agentAnalyses[0]?.agent || ''} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-3">
-                  {historicalAgent && (
-                    <TabsTrigger value="historical">Historical</TabsTrigger>
-                  )}
-                  {stakeholderAgent && (
-                    <TabsTrigger value="stakeholder">Stakeholders</TabsTrigger>
-                  )}
-                  {timelineAgent && (
-                    <TabsTrigger value="timeline">Timeline</TabsTrigger>
-                  )}
-                  {impactAgent && (
-                    <TabsTrigger value="impact">Impact</TabsTrigger>
-                  )}
-                  {factVerifierAgent && (
-                    <TabsTrigger value="fact_verifier">Fact Check</TabsTrigger>
-                  )}
-                </TabsList>
+                <div className="border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 px-6 py-2">
+                  <TabsList className="bg-transparent border-0 p-0 h-auto w-full justify-start gap-1">
+                    {historicalAgent && (
+                      <TabsTrigger 
+                        value="historical"
+                        className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm rounded-lg px-4 py-2 text-sm font-medium"
+                      >
+                        <History className="h-4 w-4 mr-2" />
+                        Historical
+                      </TabsTrigger>
+                    )}
+                    {stakeholderAgent && (
+                      <TabsTrigger 
+                        value="stakeholder"
+                        className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm rounded-lg px-4 py-2 text-sm font-medium"
+                      >
+                        <Users className="h-4 w-4 mr-2" />
+                        Stakeholders
+                      </TabsTrigger>
+                    )}
+                    {timelineAgent && (
+                      <TabsTrigger 
+                        value="timeline"
+                        className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm rounded-lg px-4 py-2 text-sm font-medium"
+                      >
+                        <Clock className="h-4 w-4 mr-2" />
+                        Timeline
+                      </TabsTrigger>
+                    )}
+                    {impactAgent && (
+                      <TabsTrigger 
+                        value="impact"
+                        className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm rounded-lg px-4 py-2 text-sm font-medium"
+                      >
+                        <Target className="h-4 w-4 mr-2" />
+                        Impact
+                      </TabsTrigger>
+                    )}
+                    {factVerifierAgent && (
+                      <TabsTrigger 
+                        value="fact_verifier"
+                        className="data-[state=active]:bg-white dark:data-[state=active]:bg-gray-800 data-[state=active]:shadow-sm rounded-lg px-4 py-2 text-sm font-medium"
+                      >
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        Fact Check
+                      </TabsTrigger>
+                    )}
+                  </TabsList>
+                </div>
 
                 {/* Historical Agent */}
                 {historicalAgent && (
-                  <TabsContent value="historical" className="mt-4">
-                    <div className="space-y-4">
+                  <TabsContent value="historical" className="p-6 pt-6">
+                    <div className="space-y-6">
                       {historicalAgent.findings?.findings?.historical_precedents && (
-                        <div>
-                          <h3 className="font-semibold text-base mb-3">Historical Precedents</h3>
-                          <div className="space-y-3">
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                            Historical Precedents
+                          </h4>
+                          <div className="space-y-4">
                             {Array.isArray(historicalAgent.findings.findings.historical_precedents) ? (
                               historicalAgent.findings.findings.historical_precedents.map((item: any, idx: number) => (
-                                <div key={idx} className="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                                <div 
+                                  key={idx} 
+                                  className="group relative pl-4 py-2 border-l-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-colors"
+                                >
+                                  <ChevronRight className="absolute left-[-9px] top-2.5 h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
                                   {typeof item === 'string' ? (
-                                    <p className="text-sm text-gray-700 dark:text-gray-300">{item}</p>
+                                    <p className="text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed">{item}</p>
                                   ) : (
-                                    <div>
+                                    <div className="space-y-2">
                                       {item.theme && (
-                                        <p className="font-semibold text-sm mb-1">{item.theme}</p>
+                                        <p className="font-semibold text-sm text-gray-900 dark:text-gray-100">{item.theme}</p>
                                       )}
                                       {item.examples && (
-                                        <ul className="space-y-1 ml-4">
+                                        <ul className="space-y-1.5 ml-4">
                                           {item.examples.map((ex: string, i: number) => (
                                             <li key={i} className="text-sm text-gray-600 dark:text-gray-400 list-disc">
                                               {ex}
@@ -267,50 +374,54 @@ export function ArticleAnalysisDisplay({ analysis, loading, error }: ArticleAnal
                       )}
 
                       {historicalAgent.findings?.findings?.pattern_analysis && (
-                        <>
-                          <Separator />
-                          <div>
-                            <h3 className="font-semibold text-base mb-3">Pattern Analysis</h3>
-                            <div className="space-y-3">
-                              {Array.isArray(historicalAgent.findings.findings.pattern_analysis) ? (
-                                historicalAgent.findings.findings.pattern_analysis.map((item: any, idx: number) => (
-                                  <div key={idx} className="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
-                                    {typeof item === 'string' ? (
-                                      <p className="text-sm text-gray-700 dark:text-gray-300">{item}</p>
-                                    ) : (
-                                      <div>
-                                        {item.pattern && (
-                                          <p className="font-semibold text-sm mb-1">{item.pattern}</p>
-                                        )}
-                                        {item.description && (
-                                          <p className="text-sm text-gray-600 dark:text-gray-400">{item.description}</p>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                ))
-                              ) : (
-                                <p className="text-sm text-gray-600 dark:text-gray-400">
-                                  {JSON.stringify(historicalAgent.findings.findings.pattern_analysis)}
-                                </p>
-                              )}
-                            </div>
+                        <div className="space-y-3">
+                          <Separator className="my-6" />
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                            Pattern Analysis
+                          </h4>
+                          <div className="space-y-4">
+                            {Array.isArray(historicalAgent.findings.findings.pattern_analysis) ? (
+                              historicalAgent.findings.findings.pattern_analysis.map((item: any, idx: number) => (
+                                <div 
+                                  key={idx} 
+                                  className="group relative pl-4 py-2 border-l-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-colors"
+                                >
+                                  <ChevronRight className="absolute left-[-9px] top-2.5 h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                                  {typeof item === 'string' ? (
+                                    <p className="text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed">{item}</p>
+                                  ) : (
+                                    <div className="space-y-1.5">
+                                      {item.pattern && (
+                                        <p className="font-semibold text-sm text-gray-900 dark:text-gray-100">{item.pattern}</p>
+                                      )}
+                                      {item.description && (
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">{item.description}</p>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              ))
+                            ) : (
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {JSON.stringify(historicalAgent.findings.findings.pattern_analysis)}
+                              </p>
+                            )}
                           </div>
-                        </>
+                        </div>
                       )}
 
                       {historicalAgent.findings?.analysis && (
-                        <>
-                          <Separator />
-                          <div>
-                            <h3 className="font-semibold text-base mb-3">Analysis</h3>
-                            <div className="prose prose-sm dark:prose-invert max-w-none prose-p:text-gray-700 dark:prose-p:text-gray-300">
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {historicalAgent.findings.analysis}
-                              </ReactMarkdown>
-                            </div>
+                        <div className="space-y-3">
+                          <Separator className="my-6" />
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                            Analysis
+                          </h4>
+                          <div className="prose prose-sm dark:prose-invert max-w-none prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:text-[15px] prose-p:leading-relaxed">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {historicalAgent.findings.analysis}
+                            </ReactMarkdown>
                           </div>
-                        </>
+                        </div>
                       )}
                     </div>
                   </TabsContent>
@@ -318,16 +429,21 @@ export function ArticleAnalysisDisplay({ analysis, loading, error }: ArticleAnal
 
                 {/* Stakeholder Agent */}
                 {stakeholderAgent && (
-                  <TabsContent value="stakeholder" className="mt-4">
-                    <div className="space-y-4">
+                  <TabsContent value="stakeholder" className="p-6 pt-6">
+                    <div className="space-y-6">
                       {stakeholderAgent.findings?.findings?.stakeholder_positions && (
-                        <div>
-                          <h3 className="font-semibold text-base mb-3">Stakeholder Positions</h3>
-                          <div className="space-y-3">
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                            Stakeholder Positions
+                          </h4>
+                          <div className="space-y-4">
                             {Object.entries(stakeholderAgent.findings.findings.stakeholder_positions).map(([key, value]: [string, any]) => (
-                              <div key={key} className="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
-                                <p className="font-semibold text-sm mb-1">{key}</p>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">{value}</p>
+                              <div 
+                                key={key} 
+                                className="p-4 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700"
+                              >
+                                <p className="font-semibold text-sm text-gray-900 dark:text-gray-100 mb-2">{key}</p>
+                                <p className="text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed">{value}</p>
                               </div>
                             ))}
                           </div>
@@ -335,41 +451,41 @@ export function ArticleAnalysisDisplay({ analysis, loading, error }: ArticleAnal
                       )}
 
                       {stakeholderAgent.findings?.findings?.power_dynamics && (
-                        <>
-                          <Separator />
-                          <div>
-                            <h3 className="font-semibold text-base mb-3">Power Dynamics</h3>
-                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                              {stakeholderAgent.findings.findings.power_dynamics}
-                            </p>
-                          </div>
-                        </>
+                        <div className="space-y-3">
+                          <Separator className="my-6" />
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                            Power Dynamics
+                          </h4>
+                          <p className="text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed">
+                            {stakeholderAgent.findings.findings.power_dynamics}
+                          </p>
+                        </div>
                       )}
 
                       {stakeholderAgent.findings?.findings?.conflicting_interests && (
-                        <>
-                          <Separator />
-                          <div>
-                            <h3 className="font-semibold text-base mb-3">Conflicting Interests</h3>
-                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                              {stakeholderAgent.findings.findings.conflicting_interests}
-                            </p>
-                          </div>
-                        </>
+                        <div className="space-y-3">
+                          <Separator className="my-6" />
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                            Conflicting Interests
+                          </h4>
+                          <p className="text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed">
+                            {stakeholderAgent.findings.findings.conflicting_interests}
+                          </p>
+                        </div>
                       )}
 
                       {stakeholderAgent.findings?.analysis && (
-                        <>
-                          <Separator />
-                          <div>
-                            <h3 className="font-semibold text-base mb-3">Analysis</h3>
-                            <div className="prose prose-sm dark:prose-invert max-w-none prose-p:text-gray-700 dark:prose-p:text-gray-300">
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {stakeholderAgent.findings.analysis}
-                              </ReactMarkdown>
-                            </div>
+                        <div className="space-y-3">
+                          <Separator className="my-6" />
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                            Analysis
+                          </h4>
+                          <div className="prose prose-sm dark:prose-invert max-w-none prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:text-[15px] prose-p:leading-relaxed">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {stakeholderAgent.findings.analysis}
+                            </ReactMarkdown>
                           </div>
-                        </>
+                        </div>
                       )}
                     </div>
                   </TabsContent>
@@ -377,24 +493,29 @@ export function ArticleAnalysisDisplay({ analysis, loading, error }: ArticleAnal
 
                 {/* Timeline Agent */}
                 {timelineAgent && (
-                  <TabsContent value="timeline" className="mt-4">
-                    <div className="space-y-4">
+                  <TabsContent value="timeline" className="p-6 pt-6">
+                    <div className="space-y-6">
                       {timelineAgent.findings?.timeline && Array.isArray(timelineAgent.findings.timeline) && (
-                        <div>
-                          <h3 className="font-semibold text-base mb-3">Detailed Timeline</h3>
-                          <div className="space-y-4">
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                            Detailed Timeline
+                          </h4>
+                          <div className="space-y-6">
                             {timelineAgent.findings.timeline.map((item: any, idx: number) => (
-                              <div key={idx} className="relative pl-6 border-l-2 border-blue-200 dark:border-blue-800">
-                                <div className="absolute -left-2 top-0 w-4 h-4 rounded-full bg-blue-600"></div>
-                                <div className="pb-4">
-                                  <p className="font-semibold text-sm text-blue-600 dark:text-blue-400 mb-1">
+                              <div key={idx} className="relative pl-8">
+                                {idx !== timelineAgent.findings.timeline.length - 1 && (
+                                  <div className="absolute left-[7px] top-6 bottom-0 w-[2px] bg-gradient-to-b from-blue-500 to-blue-300 dark:from-blue-600 dark:to-blue-800" />
+                                )}
+                                <div className="absolute left-0 top-1.5 w-4 h-4 rounded-full bg-blue-500 dark:bg-blue-600 ring-4 ring-white dark:ring-gray-900" />
+                                <div className="space-y-1.5">
+                                  <time className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
                                     {item.date}
-                                  </p>
-                                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-1">
+                                  </time>
+                                  <p className="text-sm text-gray-900 dark:text-gray-100 font-medium leading-snug">
                                     {item.event}
                                   </p>
                                   {item.significance && (
-                                    <p className="text-xs text-gray-500 dark:text-gray-400 italic">
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                                       {item.significance}
                                     </p>
                                   )}
@@ -406,33 +527,36 @@ export function ArticleAnalysisDisplay({ analysis, loading, error }: ArticleAnal
                       )}
 
                       {timelineAgent.findings?.findings?.critical_turning_points && (
-                        <>
-                          <Separator />
-                          <div>
-                            <h3 className="font-semibold text-base mb-3">Critical Turning Points</h3>
-                            <ul className="space-y-2">
-                              {timelineAgent.findings.findings.critical_turning_points.map((point: string, idx: number) => (
-                                <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
-                                  {point}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </>
+                        <div className="space-y-3">
+                          <Separator className="my-6" />
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                            Critical Turning Points
+                          </h4>
+                          <ul className="space-y-3">
+                            {timelineAgent.findings.findings.critical_turning_points.map((point: string, idx: number) => (
+                              <li 
+                                key={idx} 
+                                className="text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed pl-4 py-2 border-l-2 border-gray-200 dark:border-gray-700"
+                              >
+                                {point}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       )}
 
                       {timelineAgent.findings?.analysis && (
-                        <>
-                          <Separator />
-                          <div>
-                            <h3 className="font-semibold text-base mb-3">Analysis</h3>
-                            <div className="prose prose-sm dark:prose-invert max-w-none prose-p:text-gray-700 dark:prose-p:text-gray-300">
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {timelineAgent.findings.analysis}
-                              </ReactMarkdown>
-                            </div>
+                        <div className="space-y-3">
+                          <Separator className="my-6" />
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                            Analysis
+                          </h4>
+                          <div className="prose prose-sm dark:prose-invert max-w-none prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:text-[15px] prose-p:leading-relaxed">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {timelineAgent.findings.analysis}
+                            </ReactMarkdown>
                           </div>
-                        </>
+                        </div>
                       )}
                     </div>
                   </TabsContent>
@@ -440,16 +564,23 @@ export function ArticleAnalysisDisplay({ analysis, loading, error }: ArticleAnal
 
                 {/* Impact Agent */}
                 {impactAgent && (
-                  <TabsContent value="impact" className="mt-4">
-                    <div className="space-y-4">
+                  <TabsContent value="impact" className="p-6 pt-6">
+                    <div className="space-y-6">
                       {impactAgent.findings?.findings?.immediate_impacts && (
-                        <div>
-                          <h3 className="font-semibold text-base mb-3">Immediate Impacts</h3>
-                          <div className="space-y-2">
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                            Immediate Impacts
+                          </h4>
+                          <div className="space-y-4">
                             {Object.entries(impactAgent.findings.findings.immediate_impacts).map(([key, value]: [string, any]) => (
-                              <div key={key} className="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
-                                <p className="font-semibold text-sm mb-1 capitalize">{key.replace(/_/g, ' ')}</p>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">{value}</p>
+                              <div 
+                                key={key} 
+                                className="p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border border-blue-200 dark:border-blue-900/50"
+                              >
+                                <p className="font-semibold text-sm text-blue-900 dark:text-blue-100 mb-2 capitalize">
+                                  {key.replace(/_/g, ' ')}
+                                </p>
+                                <p className="text-[15px] text-blue-800 dark:text-blue-200 leading-relaxed">{value}</p>
                               </div>
                             ))}
                           </div>
@@ -457,51 +588,61 @@ export function ArticleAnalysisDisplay({ analysis, loading, error }: ArticleAnal
                       )}
 
                       {impactAgent.findings?.findings?.medium_term_implications && (
-                        <>
-                          <Separator />
-                          <div>
-                            <h3 className="font-semibold text-base mb-3">Medium-Term Implications</h3>
-                            <div className="space-y-2">
-                              {Object.entries(impactAgent.findings.findings.medium_term_implications).map(([key, value]: [string, any]) => (
-                                <div key={key} className="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
-                                  <p className="font-semibold text-sm mb-1 capitalize">{key.replace(/_/g, ' ')}</p>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">{value}</p>
-                                </div>
-                              ))}
-                            </div>
+                        <div className="space-y-3">
+                          <Separator className="my-6" />
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                            Medium-Term Implications
+                          </h4>
+                          <div className="space-y-4">
+                            {Object.entries(impactAgent.findings.findings.medium_term_implications).map(([key, value]: [string, any]) => (
+                              <div 
+                                key={key} 
+                                className="p-4 rounded-lg bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 border border-amber-200 dark:border-amber-900/50"
+                              >
+                                <p className="font-semibold text-sm text-amber-900 dark:text-amber-100 mb-2 capitalize">
+                                  {key.replace(/_/g, ' ')}
+                                </p>
+                                <p className="text-[15px] text-amber-800 dark:text-amber-200 leading-relaxed">{value}</p>
+                              </div>
+                            ))}
                           </div>
-                        </>
+                        </div>
                       )}
 
                       {impactAgent.findings?.findings?.long_term_consequences && (
-                        <>
-                          <Separator />
-                          <div>
-                            <h3 className="font-semibold text-base mb-3">Long-Term Consequences</h3>
-                            <div className="space-y-2">
-                              {Object.entries(impactAgent.findings.findings.long_term_consequences).map(([key, value]: [string, any]) => (
-                                <div key={key} className="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
-                                  <p className="font-semibold text-sm mb-1 capitalize">{key.replace(/_/g, ' ')}</p>
-                                  <p className="text-sm text-gray-600 dark:text-gray-400">{value}</p>
-                                </div>
-                              ))}
-                            </div>
+                        <div className="space-y-3">
+                          <Separator className="my-6" />
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                            Long-Term Consequences
+                          </h4>
+                          <div className="space-y-4">
+                            {Object.entries(impactAgent.findings.findings.long_term_consequences).map(([key, value]: [string, any]) => (
+                              <div 
+                                key={key} 
+                                className="p-4 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20 border border-purple-200 dark:border-purple-900/50"
+                              >
+                                <p className="font-semibold text-sm text-purple-900 dark:text-purple-100 mb-2 capitalize">
+                                  {key.replace(/_/g, ' ')}
+                                </p>
+                                <p className="text-[15px] text-purple-800 dark:text-purple-200 leading-relaxed">{value}</p>
+                              </div>
+                            ))}
                           </div>
-                        </>
+                        </div>
                       )}
 
                       {impactAgent.findings?.analysis && (
-                        <>
-                          <Separator />
-                          <div>
-                            <h3 className="font-semibold text-base mb-3">Analysis</h3>
-                            <div className="prose prose-sm dark:prose-invert max-w-none prose-p:text-gray-700 dark:prose-p:text-gray-300">
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {impactAgent.findings.analysis}
-                              </ReactMarkdown>
-                            </div>
+                        <div className="space-y-3">
+                          <Separator className="my-6" />
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                            Analysis
+                          </h4>
+                          <div className="prose prose-sm dark:prose-invert max-w-none prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:text-[15px] prose-p:leading-relaxed">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {impactAgent.findings.analysis}
+                            </ReactMarkdown>
                           </div>
-                        </>
+                        </div>
                       )}
                     </div>
                   </TabsContent>
@@ -509,17 +650,22 @@ export function ArticleAnalysisDisplay({ analysis, loading, error }: ArticleAnal
 
                 {/* Fact Verifier Agent */}
                 {factVerifierAgent && (
-                  <TabsContent value="fact_verifier" className="mt-4">
-                    <div className="space-y-4">
+                  <TabsContent value="fact_verifier" className="p-6 pt-6">
+                    <div className="space-y-6">
                       {factVerifierAgent.findings?.findings?.verified_claims && (
-                        <div>
-                          <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
-                            <CheckCircle2 className="h-4 w-4 text-green-600" />
-                            Verified Claims
-                          </h3>
-                          <ul className="space-y-2">
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                              Verified Claims
+                            </h4>
+                          </div>
+                          <ul className="space-y-3">
                             {factVerifierAgent.findings.findings.verified_claims.map((claim: string, idx: number) => (
-                              <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 pl-4 border-l-2 border-green-200 dark:border-green-800">
+                              <li 
+                                key={idx} 
+                                className="text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed pl-4 py-2.5 border-l-2 border-green-500 dark:border-green-600 bg-green-50/50 dark:bg-green-950/20 rounded-r"
+                              >
                                 {claim}
                               </li>
                             ))}
@@ -529,60 +675,66 @@ export function ArticleAnalysisDisplay({ analysis, loading, error }: ArticleAnal
 
                       {factVerifierAgent.findings?.findings?.unverified_claims && 
                        factVerifierAgent.findings.findings.unverified_claims.length > 0 && (
-                        <>
-                          <Separator />
-                          <div>
-                            <h3 className="font-semibold text-base mb-3 flex items-center gap-2">
-                              <CheckCircle2 className="h-4 w-4 text-yellow-600" />
+                        <div className="space-y-3">
+                          <Separator className="my-6" />
+                          <div className="flex items-center gap-2">
+                            <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
                               Unverified Claims
-                            </h3>
-                            <ul className="space-y-2">
-                              {factVerifierAgent.findings.findings.unverified_claims.map((claim: string, idx: number) => (
-                                <li key={idx} className="text-sm text-gray-700 dark:text-gray-300 pl-4 border-l-2 border-yellow-200 dark:border-yellow-800">
-                                  {claim}
-                                </li>
-                              ))}
-                            </ul>
+                            </h4>
                           </div>
-                        </>
+                          <ul className="space-y-3">
+                            {factVerifierAgent.findings.findings.unverified_claims.map((claim: string, idx: number) => (
+                              <li 
+                                key={idx} 
+                                className="text-[15px] text-gray-700 dark:text-gray-300 leading-relaxed pl-4 py-2.5 border-l-2 border-amber-500 dark:border-amber-600 bg-amber-50/50 dark:bg-amber-950/20 rounded-r"
+                              >
+                                {claim}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       )}
 
                       {factVerifierAgent.findings?.findings?.missing_context && 
                        factVerifierAgent.findings.findings.missing_context.length > 0 && (
-                        <>
-                          <Separator />
-                          <div>
-                            <h3 className="font-semibold text-base mb-3">Missing Context</h3>
-                            <ul className="space-y-2">
-                              {factVerifierAgent.findings.findings.missing_context.map((context: string, idx: number) => (
-                                <li key={idx} className="text-sm text-gray-600 dark:text-gray-400 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
-                                  {context}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        </>
+                        <div className="space-y-3">
+                          <Separator className="my-6" />
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                            Missing Context
+                          </h4>
+                          <ul className="space-y-3">
+                            {factVerifierAgent.findings.findings.missing_context.map((context: string, idx: number) => (
+                              <li 
+                                key={idx} 
+                                className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed pl-4 py-2 border-l-2 border-gray-300 dark:border-gray-600"
+                              >
+                                {context}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       )}
 
                       {factVerifierAgent.findings?.analysis && (
-                        <>
-                          <Separator />
-                          <div>
-                            <h3 className="font-semibold text-base mb-3">Analysis</h3>
-                            <div className="prose prose-sm dark:prose-invert max-w-none prose-p:text-gray-700 dark:prose-p:text-gray-300">
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                {factVerifierAgent.findings.analysis}
-                              </ReactMarkdown>
-                            </div>
+                        <div className="space-y-3">
+                          <Separator className="my-6" />
+                          <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 uppercase tracking-wide">
+                            Analysis
+                          </h4>
+                          <div className="prose prose-sm dark:prose-invert max-w-none prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:text-[15px] prose-p:leading-relaxed">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {factVerifierAgent.findings.analysis}
+                            </ReactMarkdown>
                           </div>
-                        </>
+                        </div>
                       )}
                     </div>
                   </TabsContent>
                 )}
               </Tabs>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         )}
       </div>
     </ScrollArea>
