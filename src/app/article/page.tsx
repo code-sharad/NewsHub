@@ -332,8 +332,8 @@ function ArticlePageContent() {
                 <div className="fixed bottom-8 right-8 z-50 group">
                     <Button
                         onClick={handleAnalyzeArticle}
-                        className="h-14 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 
-                        bg-black dark:bg-white text-white dark:text-black 
+                        className="h-14 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-200
+                        bg-black dark:bg-white text-white dark:text-black
                         hover:bg-gray-800 dark:hover:bg-gray-100
                         flex items-center gap-3 font-medium
                         group-hover:scale-105 transform"
