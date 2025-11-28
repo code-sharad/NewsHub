@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/contexts/theme-context'
 import { SessionProvider } from '@/components/providers/session-provider'
 import { QueryProvider } from '@/lib/providers/query-provider'
 import { Toaster } from "@/components/ui/toaster"
+import Script from "next/script"
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -37,6 +38,18 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${libreBaskerville.variable} antialiased`}
       >
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-1JTZK943GC"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-1JTZK943GC');
+          `}
+        </Script>
         <QueryProvider>
           <ThemeProvider>
             <SessionProvider>
