@@ -190,6 +190,7 @@ export function StreamingAnalysisVisual({ state, onCancel }: StreamingAnalysisVi
 
     switch (data.type) {
         case 'timeline':
+            if (!Array.isArray(data.items)) return null;
             return (
                 <div className="mt-3 space-y-2">
                     {data.items.slice(0, 3).map((event: any, i: number) => (
@@ -209,6 +210,7 @@ export function StreamingAnalysisVisual({ state, onCancel }: StreamingAnalysisVi
                 </div>
             )
         case 'stakeholders':
+            if (!Array.isArray(data.items)) return null;
             return (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                     {data.items.map((s: string, i: number) => (
@@ -219,6 +221,7 @@ export function StreamingAnalysisVisual({ state, onCancel }: StreamingAnalysisVi
                 </div>
             )
         case 'topics':
+            if (!Array.isArray(data.items)) return null;
             return (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                     {data.items.map((t: string, i: number) => (
@@ -229,13 +232,16 @@ export function StreamingAnalysisVisual({ state, onCancel }: StreamingAnalysisVi
                 </div>
             )
         case 'impact':
+            const impactText = typeof data.findings?.immediate_impacts === 'string'
+                ? data.findings.immediate_impacts
+                : 'Impact analysis available.';
             return (
                 <div className="mt-3 p-3 rounded-lg bg-purple-500/5 border border-purple-500/20 text-xs text-muted-foreground italic">
-                    "{data.findings.immediate_impacts?.slice(0, 150)}..."
+                    "{impactText.slice(0, 150)}..."
                 </div>
             )
         case 'verification':
-            if (data.claims) {
+            if (Array.isArray(data.claims)) {
                 return (
                     <div className="mt-3 space-y-2">
                         {data.claims.slice(0, 3).map((claim: any, i: number) => (
@@ -255,13 +261,14 @@ export function StreamingAnalysisVisual({ state, onCancel }: StreamingAnalysisVi
                     </div>
                 )
             }
+            const analysisText = typeof data.analysis === 'string' ? data.analysis : 'Verification complete.';
             return (
                 <div className="mt-3 p-3 rounded-lg bg-red-500/5 border border-red-500/20 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1.5 mb-1 text-red-600 dark:text-red-400 font-medium">
                         <Shield className="w-3 h-3" />
                         Verification Note
                     </div>
-                    {data.analysis?.slice(0, 150)}...
+                    {analysisText.slice(0, 150)}...
                 </div>
             )
         default:
