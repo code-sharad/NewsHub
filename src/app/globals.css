@@ -251,6 +251,12 @@
     to { transform: translateY(0); opacity: 1; }
   }
 
+  /* Word breaking utilities */
+  .overflow-wrap-anywhere {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
   /* Responsive text sizing */
   .text-responsive-xl {
     @apply text-2xl sm:text-3xl md:text-4xl lg:text-5xl;

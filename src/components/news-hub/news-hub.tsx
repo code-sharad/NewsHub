@@ -335,20 +335,7 @@ export function NewsHub() {
                 </main>
             </div>
 
-            {/* Floating Action Button - Only for Refresh */}
-            <Button
-                onClick={handleRefresh}
-                disabled={isLoading}
-                className={cn(
-                    "fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full shadow-2xl",
-                    "bg-gradient-to-r from-primary to-accent text-primary-foreground",
-                    "hover:scale-110 transition-all duration-300",
-                    "lg:hidden", // Only show on mobile/tablet
-                    isLoading && "animate-spin"
-                )}
-            >
-                <RefreshCw className="h-5 w-5" />
-            </Button>
+        
         </div>
     )
 }

@@ -27,6 +27,14 @@ import { ArticleAnalysisDisplay } from "@/components/article-analysis";
 import { StreamingAnalysisVisual } from "@/components/streaming-analysis-visual";
 import { useStreamingAnalysis } from "@/hooks/use-streaming-analysis";
 import { cn } from "@/lib/utils";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 interface ArticleContent {
   title?: string;
@@ -54,6 +62,7 @@ function ArticlePageContent() {
   const [analysisLoading, setAnalysisLoading] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [useStreaming, setUseStreaming] = useState(true); // Toggle for streaming vs non-streaming
+  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   // Streaming analysis hook
   const streaming = useStreamingAnalysis(
@@ -397,39 +406,79 @@ function ArticlePageContent() {
         </div>
       )}
 
-      {/* Analysis Sidebar */}
+      {/* Analysis Sidebar / Bottom Sheet */}
       {showAnalysis && (
-        <ResizablePanel
-          title="Article Analysis"
-          onClose={() => {
-            setShowAnalysis(false);
-            setAnalysis(null);
-            setAnalysisError(null);
-            streaming.reset();
-            streaming.cancelAnalysis();
-          }}
-          defaultWidth={60}
-          minWidth={40}
-          maxWidth={85}
-        >
-          {/* Show streaming progress while analyzing */}
-          {streaming.isStreaming ||
-          (streaming.progress > 0 && streaming.progress < 100 && !analysis) ? (
-            <StreamingAnalysisVisual
-              state={streaming}
-              onCancel={() => {
-                streaming.cancelAnalysis();
-                setShowAnalysis(false);
-              }}
-            />
-          ) : (
-            <ArticleAnalysisDisplay
-              analysis={analysis || streaming.finalResponse}
-              loading={analysisLoading}
-              error={analysisError || streaming.error}
-            />
-          )}
-        </ResizablePanel>
+        isDesktop ? (
+          <ResizablePanel
+            title="Article Analysis"
+            onClose={() => {
+              setShowAnalysis(false);
+              setAnalysis(null);
+              setAnalysisError(null);
+              streaming.reset();
+              streaming.cancelAnalysis();
+            }}
+            defaultWidth={60}
+            minWidth={40}
+            maxWidth={85}
+          >
+            {/* Show streaming progress while analyzing */}
+            {streaming.isStreaming ||
+            (streaming.progress > 0 && streaming.progress < 100 && !analysis) ? (
+              <StreamingAnalysisVisual
+                state={streaming}
+                onCancel={() => {
+                  streaming.cancelAnalysis();
+                  setShowAnalysis(false);
+                }}
+              />
+            ) : (
+              <ArticleAnalysisDisplay
+                analysis={analysis || streaming.finalResponse}
+                loading={analysisLoading}
+                error={analysisError || streaming.error}
+              />
+            )}
+          </ResizablePanel>
+        ) : (
+          <Sheet open={showAnalysis} onOpenChange={(open) => {
+            if (!open) {
+              setShowAnalysis(false);
+              setAnalysis(null);
+              setAnalysisError(null);
+              streaming.reset();
+              streaming.cancelAnalysis();
+            }
+          }}>
+            <SheetContent side="bottom" className="h-[90vh] sm:max-w-none rounded-t-xl p-0 overflow-x-hidden">
+              <SheetHeader className="px-6 py-4 border-b">
+                <SheetTitle>Article Analysis</SheetTitle>
+                <SheetDescription className="sr-only">
+                  AI-powered analysis of the article
+                </SheetDescription>
+              </SheetHeader>
+              <div className="h-full overflow-y-auto pb-20">
+                 {/* Show streaming progress while analyzing */}
+                {streaming.isStreaming ||
+                (streaming.progress > 0 && streaming.progress < 100 && !analysis) ? (
+                  <StreamingAnalysisVisual
+                    state={streaming}
+                    onCancel={() => {
+                      streaming.cancelAnalysis();
+                      setShowAnalysis(false);
+                    }}
+                  />
+                ) : (
+                  <ArticleAnalysisDisplay
+                    analysis={analysis || streaming.finalResponse}
+                    loading={analysisLoading}
+                    error={analysisError || streaming.error}
+                  />
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+        )
       )}
 
       {/* Header */}
