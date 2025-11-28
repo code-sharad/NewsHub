@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Geist } from "next/font/google"
+import { Geist_Mono, Geist, Libre_Baskerville } from "next/font/google"
 import "./globals.css";
 import { ThemeProvider } from '@/contexts/theme-context'
 import { SessionProvider } from '@/components/providers/session-provider'
@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   weight: ["200", "300", "400", "500", "600", "700", "800"],
 });
+const libreBaskerville = Libre_Baskerville({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  weight: ["400", "700"],
+});
 
 export const metadata: Metadata = {
   title: "NewsHub - Your Shortcut to News",
@@ -30,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${libreBaskerville.variable} antialiased`}
       >
         <QueryProvider>
           <ThemeProvider>

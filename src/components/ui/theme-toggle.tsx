@@ -22,40 +22,10 @@ export function ThemeToggle() {
             description: 'Light mode'
         },
         {
-            value: 'ocean' as const,
-            label: 'Ocean',
+            value: 'dark' as const,
+            label: 'Dark',
             icon: Moon,
-            description: 'Ocean mode'
-        },
-        {
-            value: 'sunset' as const,
-            label: 'Sunset',
-            icon: Moon,
-            description: 'Sunset mode'
-        },
-        {
-            value: 'coffee' as const,
-            label: 'Coffee',
-            icon: Moon,
-            description: 'Coffee mode'
-        },
-        {
-            value: 'monochrome' as const,
-            label: 'Monochrome',
-            icon: Moon,
-            description: 'Monochrome mode'
-        },
-        {
-            value: 'dark-oled' as const,
-            label: 'Dark OLED',
-            icon: Moon,
-            description: 'Dark OLED mode'
-        },
-        {
-            value: 'dark-formal' as const,
-            label: 'Dark Formal',
-            icon: Moon,
-            description: 'Dark Formal mode'
+            description: 'Dark mode'
         },
         {
             value: 'system' as const,
@@ -93,7 +63,7 @@ export function ThemeToggle() {
                         <div className="relative">
                             <CurrentIcon className="w-4 h-4 transition-all duration-300 group-hover:scale-110" />
                             {theme === 'system' && (
-                                <div className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full transition-colors duration-300 ${actualTheme === 'dark-formal' ? 'bg-stone-500' : 'bg-amber-500'
+                                <div className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full transition-colors duration-300 ${actualTheme === 'dark' ? 'bg-zinc-500' : 'bg-amber-500'
                                     }`} />
                             )}
                         </div>
@@ -167,7 +137,7 @@ export function ThemeToggle() {
 
 export function ThemeIndicator() {
     const { actualTheme, isLoading } = useTheme()
-    const isDark = actualTheme === 'dark-oled' || actualTheme === 'dark-formal'
+    const isDark = actualTheme === 'dark'
 
     if (isLoading) return null
 
@@ -179,4 +149,4 @@ export function ThemeIndicator() {
             </span>
         </div>
     )
-} 
+}

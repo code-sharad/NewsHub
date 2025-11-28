@@ -15,7 +15,8 @@ import {
     Sparkles,
     Calendar,
     Archive,
-    Star
+    Star,
+    LayoutGrid
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -28,14 +29,25 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip'
 
+import { NewsCategory } from '@/types/news'
+
 interface LeftSidebarProps {
     sources: string[]
     selectedSource: string | null
     onSourceSelect: (source: string | null) => void
+    selectedCategory: NewsCategory | 'all'
+    onCategorySelect: (category: NewsCategory | 'all') => void
     isCollapsed?: boolean
 }
 
-export function LeftSidebar({ sources, selectedSource, onSourceSelect, isCollapsed = false }: LeftSidebarProps) {
+export function LeftSidebar({
+    sources,
+    selectedSource,
+    onSourceSelect,
+    selectedCategory,
+    onCategorySelect,
+    isCollapsed = false
+}: LeftSidebarProps) {
     const { data: session } = useSession()
     const router = useRouter()
     const [bookmarkCount, setBookmarkCount] = useState(0)
@@ -79,25 +91,25 @@ export function LeftSidebar({ sources, selectedSource, onSourceSelect, isCollaps
             action: () => handleNavigation('Bookmarks'),
             description: 'Saved articles'
         },
-        {
-            name: 'Trending',
-            icon: TrendingUp,
-            description: 'Popular stories'
-        },
-        {
-            name: 'Archive',
-            icon: Archive,
-            description: 'Past articles'
-        },
+        // {
+        //     name: 'Trending',
+        //     icon: TrendingUp,
+        //     description: 'Popular stories'
+        // },
+        // {
+        //     name: 'Archive',
+        //     icon: Archive,
+        //     description: 'Past articles'
+        // },
     ]
 
-    const quickTopics = [
-        { name: 'Politics', count: 45, icon: '🏛️' },
-        { name: 'Technology', count: 32, icon: '💻' },
-        { name: 'Business', count: 28, icon: '💼' },
-        { name: 'Sports', count: 19, icon: '⚽' },
-        { name: 'Health', count: 15, icon: '🏥' },
-        { name: 'Science', count: 12, icon: '🔬' },
+    const quickTopics: { name: string; id: NewsCategory; count: number; icon: string }[] = [
+        { name: 'Politics', id: 'politics', count: 45, icon: '🏛️' },
+        { name: 'Technology', id: 'technology', count: 32, icon: '💻' },
+        { name: 'Business', id: 'business', count: 28, icon: '💼' },
+        { name: 'Sports', id: 'sports', count: 19, icon: '⚽' },
+        { name: 'Health', id: 'health', count: 15, icon: '🏥' },
+        { name: 'Science', id: 'science', count: 12, icon: '🔬' },
     ]
 
     const formatSourceName = (source: string) => {
@@ -132,7 +144,7 @@ export function LeftSidebar({ sources, selectedSource, onSourceSelect, isCollaps
             <TooltipProvider>
                 <div className="flex flex-col h-full w-16">
                     <div className="p-3 border-b border-border/50">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-primary to-accent flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-primary to-accent flex items-center justify-center">
                             <Sparkles className="w-5 h-5 text-primary-foreground" />
                         </div>
                     </div>
@@ -148,7 +160,7 @@ export function LeftSidebar({ sources, selectedSource, onSourceSelect, isCollaps
                                                 variant={item.current ? "secondary" : "ghost"}
                                                 size="icon"
                                                 className={cn(
-                                                    "w-10 h-10 rounded-lg relative transition-all duration-200",
+                                                    "w-10 h-10 rounded-xl relative transition-all duration-200",
                                                     item.current && "bg-primary/10 text-primary hover:bg-primary/15"
                                                 )}
                                                 onClick={item.action}
@@ -182,7 +194,7 @@ export function LeftSidebar({ sources, selectedSource, onSourceSelect, isCollaps
                                             variant={selectedSource === null ? "secondary" : "ghost"}
                                             size="icon"
                                             className={cn(
-                                                "w-10 h-10 rounded-lg transition-all duration-200",
+                                                "w-10 h-10 rounded-xl transition-all duration-200",
                                                 selectedSource === null && "bg-primary/10 text-primary hover:bg-primary/15"
                                             )}
                                             onClick={() => onSourceSelect(null)}
@@ -205,7 +217,7 @@ export function LeftSidebar({ sources, selectedSource, onSourceSelect, isCollaps
                                                 variant={selectedSource === source ? "secondary" : "ghost"}
                                                 size="icon"
                                                 className={cn(
-                                                    "w-10 h-10 rounded-lg transition-all duration-200 text-xs font-bold",
+                                                    "w-10 h-10 rounded-xl transition-all duration-200 text-xs font-bold",
                                                     selectedSource === source && "bg-primary/10 text-primary hover:bg-primary/15"
                                                 )}
                                                 onClick={() => onSourceSelect(source)}
@@ -234,9 +246,13 @@ export function LeftSidebar({ sources, selectedSource, onSourceSelect, isCollaps
                                     <Tooltip key={topic.name}>
                                         <TooltipTrigger asChild>
                                             <Button
-                                                variant="ghost"
+                                                variant={selectedCategory === topic.id ? "secondary" : "ghost"}
                                                 size="icon"
-                                                className="w-6 h-6 text-xs rounded-md"
+                                                className={cn(
+                                                    "w-6 h-6 text-xs rounded-md",
+                                                    selectedCategory === topic.id && "bg-primary/10 text-primary"
+                                                )}
+                                                onClick={() => onCategorySelect(topic.id)}
                                             >
                                                 <span className="text-sm">{topic.icon}</span>
                                             </Button>
@@ -264,18 +280,7 @@ export function LeftSidebar({ sources, selectedSource, onSourceSelect, isCollaps
 
     return (
         <div className="flex flex-col h-full">
-            <div className="p-6 border-b border-border/50">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-gradient-to-r from-primary to-accent">
-                        <Sparkles className="w-4 h-4 text-primary-foreground" />
-                    </div>
-                    <div>
-                        <h2 className="font-semibold text-foreground">Explore</h2>
-                        <p className="text-xs text-muted-foreground">Discover content</p>
-                    </div>
-                </div>
-            </div>
-
+            
             <ScrollArea className="flex-1 px-4">
                 <div className="py-6 space-y-8">
                     {/* Quick Navigation */}
@@ -380,11 +385,33 @@ export function LeftSidebar({ sources, selectedSource, onSourceSelect, isCollaps
                             Popular Topics
                         </h3>
                         <div className="grid grid-cols-2 gap-2">
+                            <Button
+                                variant={selectedCategory === 'all' ? "secondary" : "ghost"}
+                                className={cn(
+                                    "h-auto p-3 rounded-xl hover:bg-muted/50 group transition-all duration-200",
+                                    selectedCategory === 'all' && "bg-primary/10 text-primary border border-primary/20"
+                                )}
+                                onClick={() => onCategorySelect('all')}
+                            >
+                                <div className="text-center space-y-1">
+                                    <div className="text-lg flex justify-center">
+                                        <LayoutGrid className="w-6 h-6" />
+                                    </div>
+                                    <div className="text-xs font-medium">All</div>
+                                    <Badge variant="secondary" className="text-xs bg-muted-foreground/10">
+                                        View All
+                                    </Badge>
+                                </div>
+                            </Button>
                             {quickTopics.map((topic) => (
                                 <Button
                                     key={topic.name}
-                                    variant="ghost"
-                                    className="h-auto p-3 rounded-xl hover:bg-muted/50 group transition-all duration-200"
+                                    variant={selectedCategory === topic.id ? "secondary" : "ghost"}
+                                    className={cn(
+                                        "h-auto p-3 rounded-xl hover:bg-muted/50 group transition-all duration-200",
+                                        selectedCategory === topic.id && "bg-primary/10 text-primary border border-primary/20"
+                                    )}
+                                    onClick={() => onCategorySelect(topic.id)}
                                 >
                                     <div className="text-center space-y-1">
                                         <div className="text-lg">{topic.icon}</div>

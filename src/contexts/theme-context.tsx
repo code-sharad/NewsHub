@@ -2,12 +2,12 @@
 
 import React, { createContext, useContext, useEffect, useState, useRef, useMemo } from 'react'
 
-type Theme = 'light' | 'nature' | 'ocean' | 'sunset' | 'monochrome' | 'coffee' | 'dark-oled' | 'dark-formal' | 'system'
+type Theme = 'light' | 'dark' | 'system'
 
 interface ThemeContextType {
     theme: Theme
     setTheme: (theme: Theme) => void
-    actualTheme: Theme
+    actualTheme: 'light' | 'dark'
     isLoading: boolean
     availableThemes: Array<{
         value: Theme
@@ -24,66 +24,24 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 const AVAILABLE_THEMES = [
     {
         value: 'light' as Theme,
-        label: 'Pure Light',
-        description: 'Clean, minimal, and bright',
-        preview: 'bg-gradient-to-br from-white to-gray-50',
-        gradient: 'from-white to-gray-100'
+        label: 'Light',
+        description: 'Clean and bright',
+        preview: 'bg-white',
+        gradient: 'from-white to-zinc-100'
     },
     {
-        value: 'nature' as Theme,
-        label: 'Nature',
-        description: 'Earth tones and organic feel',
-        preview: 'bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600',
-        gradient: 'from-green-400 via-emerald-500 to-teal-600'
-    },
-    {
-        value: 'ocean' as Theme,
-        label: 'Ocean Depths',
-        description: 'Deep blues and aqua tones',
-        preview: 'bg-gradient-to-br from-blue-600 via-teal-500 to-cyan-400',
-        gradient: 'from-blue-600 via-teal-500 to-cyan-400'
-    },
-    {
-        value: 'sunset' as Theme,
-        label: 'Golden Sunset',
-        description: 'Warm oranges and golden hues',
-        preview: 'bg-gradient-to-br from-yellow-400 via-orange-500 to-red-500',
-        gradient: 'from-yellow-400 via-orange-500 to-red-500'
-    },
-    {
-        value: 'monochrome' as Theme,
-        label: 'Monochrome',
-        description: 'Classic black and white',
-        preview: 'bg-gradient-to-br from-gray-200 via-gray-400 to-gray-600',
-        gradient: 'from-gray-200 via-gray-400 to-gray-600'
-    },
-    {
-        value: 'coffee' as Theme,
-        label: 'Coffee Shop',
-        description: 'Warm browns and cream tones',
-        preview: 'bg-gradient-to-br from-amber-200 via-orange-300 to-brown-500',
-        gradient: 'from-amber-200 via-orange-300 to-brown-500'
-    },
-    {
-        value: 'dark-oled' as Theme,
-        label: 'OLED Dark',
-        description: 'Pure black for OLED displays',
-        preview: 'bg-gradient-to-br from-black via-gray-900 to-blue-900',
-        gradient: 'from-black via-gray-900 to-blue-900'
-    },
-    {
-        value: 'dark-formal' as Theme,
-        label: 'Formal Dark',
-        description: 'Professional stone theme',
-        preview: 'bg-gradient-to-br from-stone-800 via-stone-700 to-amber-600',
-        gradient: 'from-stone-800 via-stone-700 to-amber-600'
+        value: 'dark' as Theme,
+        label: 'Dark',
+        description: 'Easy on the eyes',
+        preview: 'bg-zinc-950',
+        gradient: 'from-zinc-900 to-zinc-950'
     },
     {
         value: 'system' as Theme,
         label: 'System',
         description: 'Follow device preference',
-        preview: 'bg-gradient-to-br from-gray-400 to-gray-600',
-        gradient: 'from-gray-400 to-gray-600'
+        preview: 'bg-zinc-500',
+        gradient: 'from-zinc-400 to-zinc-600'
     }
 ]
 
@@ -97,9 +55,9 @@ const getStoredTheme = (): Theme => {
     }
 }
 
-const getSystemTheme = (): 'light' => {
-    // Since we removed dark theme, always return light for system preference
-    return 'light'
+const getSystemTheme = (): 'light' | 'dark' => {
+    if (typeof window === 'undefined') return 'light'
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
 const setStoredTheme = (theme: Theme): void => {
@@ -111,33 +69,20 @@ const setStoredTheme = (theme: Theme): void => {
     }
 }
 
-// Enhanced theme application with smooth transitions
-const applyThemeToDOM = (theme: Theme): void => {
+// Instant theme application
+const applyThemeToDOM = (theme: 'light' | 'dark'): void => {
     const root = document.documentElement
 
-    requestAnimationFrame(() => {
-        // Add transition class for smooth theme switching
-        root.classList.add('theme-transitioning')
+    // Remove dark class
+    root.classList.remove('dark')
 
-        // Remove all theme classes
-        const themeClasses = ['light', 'nature', 'ocean', 'sunset', 'monochrome', 'coffee', 'dark-oled', 'dark-formal']
-        themeClasses.forEach(cls => root.classList.remove(cls))
+    // Apply new theme
+    if (theme === 'dark') {
+        root.classList.add('dark')
+    }
 
-        // Apply new theme
-        root.setAttribute('data-theme', theme)
-        if (theme !== 'system') {
-            root.classList.add(theme)
-        }
-
-        // Set color scheme for browser elements
-        const isDarkTheme = theme === 'dark-oled' || theme === 'dark-formal'
-        root.style.colorScheme = isDarkTheme ? 'dark' : 'light'
-
-        // Remove transition class after animation
-        setTimeout(() => {
-            root.classList.remove('theme-transitioning')
-        }, 300)
-    })
+    // Set color scheme for browser elements
+    root.style.colorScheme = theme
 }
 
 export function useTheme() {
@@ -150,30 +95,15 @@ export function useTheme() {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [theme, setThemeState] = useState<Theme>('system')
-    const [actualTheme, setActualTheme] = useState<Theme>('light')
+    const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light')
     const [isLoading, setIsLoading] = useState(true)
 
     const mediaQueryRef = useRef<MediaQueryList | null>(null)
-    const timeoutRef = useRef<NodeJS.Timeout | null>(null)
     const isInitializedRef = useRef(false)
-
-    // Debounced theme application
-    const debouncedApplyTheme = useMemo(() => {
-        return (newTheme: Theme) => {
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current)
-            }
-
-            timeoutRef.current = setTimeout(() => {
-                applyThemeToDOM(newTheme)
-                setActualTheme(newTheme)
-            }, 16)
-        }
-    }, [])
 
     // Resolve theme
     const resolveTheme = useMemo(() => {
-        return (themeToResolve: Theme): Theme => {
+        return (themeToResolve: Theme): 'light' | 'dark' => {
             if (themeToResolve === 'system') {
                 return getSystemTheme()
             }
@@ -181,16 +111,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         }
     }, [])
 
-    // Enhanced setTheme function
+    // Instant setTheme function
     const setTheme = useMemo(() => {
         return (newTheme: Theme) => {
             setThemeState(newTheme)
             setStoredTheme(newTheme)
 
             const resolved = resolveTheme(newTheme)
-            debouncedApplyTheme(resolved)
+            applyThemeToDOM(resolved)
+            setActualTheme(resolved)
         }
-    }, [resolveTheme, debouncedApplyTheme])
+    }, [resolveTheme])
 
     // Initialize theme system
     useEffect(() => {
@@ -209,14 +140,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
                 setActualTheme(resolved)
 
                 // Set up system theme listener
-                if (storedTheme === 'system') {
+                if (typeof window !== 'undefined') {
                     mediaQueryRef.current = window.matchMedia('(prefers-color-scheme: dark)')
 
                     const handleSystemThemeChange = (e: MediaQueryListEvent) => {
                         if (theme === 'system') {
-                            // Since we removed dark theme, always use light
-                            const newTheme = 'light'
-                            debouncedApplyTheme(newTheme)
+                            const newTheme = e.matches ? 'dark' : 'light'
+                            applyThemeToDOM(newTheme)
+                            setActualTheme(newTheme)
                         }
                     }
 
@@ -233,43 +164,44 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
                 applyThemeToDOM('light')
                 setActualTheme('light')
             } finally {
-                requestAnimationFrame(() => {
-                    setIsLoading(false)
-                })
+                setIsLoading(false)
             }
         }
 
-        const initTimeout = setTimeout(initialize, 0)
+        initialize()
 
         return () => {
-            clearTimeout(initTimeout)
             if (cleanup) cleanup()
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current)
-            }
         }
-    }, [debouncedApplyTheme, resolveTheme, theme])
+    }, [resolveTheme, theme])
 
-    // Update system theme listener
+    // Update system theme listener when theme changes
     useEffect(() => {
         if (!isInitializedRef.current) return
 
         if (theme === 'system') {
-            if (!mediaQueryRef.current) {
+            if (!mediaQueryRef.current && typeof window !== 'undefined') {
                 mediaQueryRef.current = window.matchMedia('(prefers-color-scheme: dark)')
+            }
 
+            if (mediaQueryRef.current) {
                 const handleSystemThemeChange = (e: MediaQueryListEvent) => {
                     if (theme === 'system') {
-                        // Since we removed dark theme, always use light
-                        const newTheme = 'light'
-                        debouncedApplyTheme(newTheme)
+                        const newTheme = e.matches ? 'dark' : 'light'
+                        applyThemeToDOM(newTheme)
+                        setActualTheme(newTheme)
                     }
                 }
 
-                mediaQueryRef.current.addEventListener('change', handleSystemThemeChange)
+                // Remove existing listener if any (simplified for this context)
+                mediaQueryRef.current.onchange = handleSystemThemeChange
+            }
+        } else {
+             if (mediaQueryRef.current) {
+                mediaQueryRef.current.onchange = null
             }
         }
-    }, [theme, debouncedApplyTheme])
+    }, [theme])
 
     const contextValue = useMemo(() => ({
         theme,
@@ -284,4 +216,4 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             {children}
         </ThemeContext.Provider>
     )
-} 
+}

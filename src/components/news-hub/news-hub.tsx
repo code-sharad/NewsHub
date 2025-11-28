@@ -56,15 +56,6 @@ export function NewsHub() {
         return allArticles
     }, [selectedCategory, categoryQuery.data, allArticles])
 
-    // Show loading screen on initial load
-    if (isLoading && !hasPartialData && selectedCategory === 'all') {
-        return <LoadingScreen message="Fetching the latest news..." />
-    }
-
-    if (selectedCategory !== 'all' && categoryQuery.isLoading) {
-        return <LoadingScreen message={`Fetching ${selectedCategory} news...`} />
-    }
-
     // Prepare articles for display
     const filteredArticles = articlesToUse.filter(article => {
         const matchesSource = selectedSource === 'all' || article.source === selectedSource
@@ -106,6 +97,11 @@ export function NewsHub() {
         setArticlesShown(ARTICLES_PER_PAGE)
     }
 
+    // Determine if we are in a loading state that should block content
+    const isCategoryLoading = selectedCategory !== 'all' && categoryQuery.isLoading
+    const isInitialLoading = isLoading && !hasPartialData && selectedCategory === 'all'
+    const showLoading = isCategoryLoading || isInitialLoading
+
     return (
         <div className="min-h-screen bg-background">
             <Header onSearch={handleSearch} />
@@ -139,6 +135,8 @@ export function NewsHub() {
                             sources={['thehindu', 'indianexpress', 'economictimes']}
                             selectedSource={selectedSource === 'all' ? null : selectedSource}
                             onSourceSelect={handleSourceFilter}
+                            selectedCategory={selectedCategory}
+                            onCategorySelect={handleCategoryFilter}
                             isCollapsed={sidebarCollapsed}
                         />
                     </div>
@@ -165,6 +163,8 @@ export function NewsHub() {
                             sources={['thehindu', 'indianexpress', 'economictimes']}
                             selectedSource={selectedSource === 'all' ? null : selectedSource}
                             onSourceSelect={handleSourceFilter}
+                            selectedCategory={selectedCategory}
+                            onCategorySelect={handleCategoryFilter}
                             isCollapsed={false}
                         />
                     </SheetContent>
@@ -206,11 +206,32 @@ export function NewsHub() {
                     </div>
 
                     {/* Content Container */}
-                    <div className="flex-1 flex overflow-hidden">
+                    <div className="flex-1 flex overflow-hidden relative">
                         {/* News Feed */}
                         <div className="flex-1 overflow-y-auto">
-                            {isError && !hasPartialData ? (
-                                <div className="flex items-center justify-center min-h-full p-8">
+                            {/* Category Heading */}
+                            <div className="px-4 sm:px-6 lg:px-8 pt-8 pb-4">
+                                <h1 className="text-3xl font-bold tracking-tight capitalize">
+                                    {selectedCategory === 'all' ? 'Latest News' : `${selectedCategory} News`}
+                                </h1>
+                                <p className="text-muted-foreground mt-1">
+                                    {selectedCategory === 'all'
+                                        ? 'Top stories from around the world'
+                                        : `Latest updates in ${selectedCategory}`
+                                    }
+                                </p>
+                            </div>
+
+                            {showLoading ? (
+                                <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {[...Array(6)].map((_, i) => (
+                                            <NewsCardSkeleton key={`loading-skeleton-${i}`} />
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : isError && !hasPartialData ? (
+                                <div className="flex items-center justify-center min-h-[400px] p-8">
                                     <div className={cn(
                                         "text-center glass-card max-w-md",
                                         "animate-fade-in-up"
@@ -280,13 +301,11 @@ export function NewsHub() {
                                                     <Button
                                                         onClick={handleLoadMore}
                                                         size="lg"
+                                                        variant="secondary"
                                                         disabled={isLoading}
                                                         className={cn(
-                                                            "px-8 py-3 rounded-xl font-medium w-full max-w-sm",
-                                                            "bg-gradient-to-r from-primary to-accent text-primary-foreground",
-                                                            "hover:scale-105 transition-all duration-300",
-                                                            "shadow-glow hover:shadow-neon",
-                                                            "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                                                            "w-full max-w-sm shadow-glow",
+                                                            "disabled:opacity-50 disabled:cursor-not-allowed"
                                                         )}
                                                     >
                                                         {isLoading ? (
@@ -297,7 +316,7 @@ export function NewsHub() {
                                                         ) : (
                                                             <>
                                                                 <TrendingUp className="w-4 h-4 mr-2" />
-                                                                Load More Articles
+                                                                Load More Article
                                                             </>
                                                         )}
                                                     </Button>

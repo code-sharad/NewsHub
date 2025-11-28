@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useSession, signIn, signOut } from 'next-auth/react'
-import { Search, Bell, Settings, User, LogOut, Sparkles, Zap, Menu } from 'lucide-react'
+import Image from 'next/image'
+import { Search, Bell, Settings, User, LogOut, Sparkles, Zap, Menu, LogIn } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -48,13 +50,14 @@ export function Header({ onSearch }: HeaderProps) {
         )}>
             {/* Logo Section */}
             <div className="flex items-center space-x-3 min-w-0">
-                <div className={cn(
-                    "w-9 h-9 rounded-xl flex items-center justify-center relative overflow-hidden flex-shrink-0",
-                    "bg-gradient-to-br from-primary to-accent",
-                    "shadow-lg"
-                )}>
-                    <Zap className="h-5 w-5 text-primary-foreground" />
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
+                <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg group cursor-pointer hover:scale-105 transition-transform duration-300">
+                    <Image
+                        src="/logo.png"
+                        alt="NewsHub Logo"
+                        fill
+                        className="object-cover"
+                        priority
+                    />
                 </div>
                 <div className="min-w-0">
                     <h1 className="text-xl font-bold text-gradient-primary truncate">
@@ -218,15 +221,9 @@ export function Header({ onSearch }: HeaderProps) {
                     <Button
                         onClick={() => signIn('google')}
                         size="sm"
-                        className={cn(
-                            "bg-gradient-to-r from-primary to-accent text-primary-foreground",
-                            "hover:from-primary/90 hover:to-accent/90",
-                            "px-4 h-9 text-sm rounded-xl font-medium",
-                            "shadow-lg hover:shadow-xl transition-all duration-300",
-                            "hover:scale-105 active:scale-95"
-                        )}
+                        className="shadow-glow px-6"
                     >
-                        <Sparkles className="w-4 h-4 mr-2" />
+                        <LogIn className="w-4 h-4 mr-2" />
                         <span className="hidden sm:inline">Sign In</span>
                         <span className="sm:hidden">Join</span>
                     </Button>

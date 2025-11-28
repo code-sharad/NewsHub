@@ -8,40 +8,26 @@ import { cn } from '@/lib/utils'
 interface LoadingScreenProps {
     message?: string
     showLogo?: boolean
+    variant?: 'fullscreen' | 'overlay'
 }
 
 export function LoadingScreen({
     message = "Loading amazing content...",
-    showLogo = true
+    showLogo = true,
+    variant = 'fullscreen'
 }: LoadingScreenProps) {
     const { actualTheme } = useTheme()
 
     const getThemeGradient = () => {
-        switch (actualTheme) {
-            case 'nature':
-                return 'from-green-400 via-emerald-500 to-teal-600'
-            case 'ocean':
-                return 'from-blue-600 via-teal-500 to-cyan-400'
-            case 'sunset':
-                return 'from-yellow-400 via-orange-500 to-red-500'
-            case 'coffee':
-                return 'from-amber-200 via-orange-300 to-brown-500'
-            case 'monochrome':
-                return 'from-gray-200 via-gray-400 to-gray-600'
-            case 'dark-oled':
-                return 'from-black via-gray-900 to-blue-900'
-            case 'light':
-            case 'system':
-            case 'dark-formal':
-                return 'from-stone-800 via-stone-700 to-amber-600'
-            default:
-                return 'from-stone-500 via-stone-500 to-stone-600'
-        }
+        return actualTheme === 'dark'
+            ? 'from-zinc-900 via-zinc-800 to-zinc-950'
+            : 'from-white via-zinc-50 to-zinc-100'
     }
 
     return (
         <div className={cn(
-            "fixed inset-0 z-50 flex items-center justify-center",
+            variant === 'fullscreen' ? "fixed inset-0 z-50" : "absolute inset-0 z-10",
+            "flex items-center justify-center",
             "bg-background/95 backdrop-blur-sm"
         )}>
             {/* Animated background */}
@@ -68,7 +54,10 @@ export function LoadingScreen({
                             "bg-gradient-to-br shadow-2xl animate-float",
                             getThemeGradient()
                         )}>
-                            <Zap className="h-10 w-10 text-white" />
+                            <Zap className={cn(
+                                "h-10 w-10",
+                                actualTheme === 'dark' ? "text-white" : "text-zinc-900"
+                            )} />
                             <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent rounded-2xl" />
                         </div>
 
@@ -97,7 +86,9 @@ export function LoadingScreen({
                 <div className="space-y-2">
                     <h1 className={cn(
                         "text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent",
-                        getThemeGradient()
+                        actualTheme === 'dark'
+                            ? "from-white to-zinc-400"
+                            : "from-zinc-900 to-zinc-600"
                     )}>
                         NewsHub
                     </h1>
@@ -215,4 +206,88 @@ export function NewsCardSkeleton() {
             </div>
         </div>
     )
-} 
+}
+
+// Theme-aware skeleton loader for light mode visibility
+function ThemedSkeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+    return (
+        <div
+            className={cn(
+                "animate-pulse rounded-md",
+                "bg-zinc-200 dark:bg-muted",
+                className
+            )}
+            {...props}
+        />
+    )
+}
+
+// Skeleton loading component for full article page
+export function ArticleSkeleton() {
+    return (
+        <div className="min-h-screen bg-background pb-20 animate-pulse">
+            {/* Header Skeleton */}
+            <div className="sticky top-0 z-40 w-full h-16 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+                <div className="max-w-5xl mx-auto px-4 h-full flex items-center justify-between">
+                    <ThemedSkeleton className="h-9 w-20 rounded-lg" />
+                    <div className="flex gap-2">
+                        <ThemedSkeleton className="h-9 w-9 rounded-lg" />
+                        <ThemedSkeleton className="h-9 w-9 rounded-lg" />
+                        <ThemedSkeleton className="h-9 w-24 rounded-lg" />
+                    </div>
+                </div>
+            </div>
+
+            {/* Content Skeleton */}
+            <main className="max-w-3xl mx-auto px-4 py-12 sm:py-16">
+                <div className="space-y-8">
+                    {/* Article Header */}
+                    <div className="space-y-6 text-center">
+                        <div className="flex items-center justify-center gap-3">
+                            <ThemedSkeleton className="h-6 w-24 rounded-full" />
+                            <ThemedSkeleton className="h-4 w-32" />
+                        </div>
+
+                        <div className="space-y-3">
+                            <ThemedSkeleton className="h-12 w-full max-w-2xl mx-auto" />
+                            <ThemedSkeleton className="h-12 w-3/4 mx-auto" />
+                        </div>
+
+                        <div className="space-y-2 pt-2">
+                            <ThemedSkeleton className="h-6 w-full max-w-xl mx-auto" />
+                            <ThemedSkeleton className="h-6 w-2/3 mx-auto" />
+                        </div>
+
+                        <div className="flex items-center justify-center pt-2">
+                            <ThemedSkeleton className="h-8 w-8 rounded-full mr-3" />
+                            <ThemedSkeleton className="h-4 w-32" />
+                        </div>
+                    </div>
+
+                    {/* Article Image */}
+                    <div className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden my-12 bg-zinc-200 dark:bg-muted">
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <ThemedSkeleton className="h-16 w-16 opacity-30 dark:opacity-20" />
+                        </div>
+                    </div>
+
+                    <div className="max-w-xs mx-auto">
+                        <ThemedSkeleton className="h-px w-full" />
+                    </div>
+
+                    {/* Article Body */}
+                    <div className="space-y-6">
+                        {[...Array(8)].map((_, i) => (
+                            <div key={i} className="space-y-3">
+                                <ThemedSkeleton className="h-4 w-full" />
+                                <ThemedSkeleton className="h-4 w-full" />
+                                <ThemedSkeleton className="h-4 w-[90%]" />
+                                {i % 3 === 0 && <ThemedSkeleton className="h-4 w-[80%]" />}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </main>
+        </div>
+    )
+}

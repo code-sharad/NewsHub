@@ -6,23 +6,16 @@ import { useRouter } from 'next/navigation'
 import { formatDistanceToNow, parseISO, format, isValid } from 'date-fns'
 import {
     BookmarkIcon,
-    MessageSquare,
     Share2,
     TrendingUp,
     Clock,
-    Eye,
-    Sparkles,
     Heart,
-    ArrowUpRight,
-    Zap,
     ExternalLink,
     ImageIcon
 } from 'lucide-react'
 import { NewsArticle } from '@/lib/api'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { Card } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
@@ -35,76 +28,29 @@ interface NewsFeedProps {
 // Utility function to format date strings
 const formatArticleDate = (dateString: string): string => {
     try {
-        // Handle various date formats
         let date: Date
-
-        // Try parsing as ISO string first
         if (dateString.includes('T') || dateString.includes('-')) {
             date = parseISO(dateString)
         } else {
-            // Try parsing as regular date string
             date = new Date(dateString)
         }
 
-        // Check if date is valid
         if (!isValid(date)) {
-            return dateString // Return original if parsing fails
+            return dateString
         }
 
-        // Check if date is recent (within last 7 days)
         const now = new Date()
         const diffInDays = Math.abs(now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
 
         if (diffInDays < 7) {
-            // Show relative time for recent articles
             return formatDistanceToNow(date, { addSuffix: true })
         } else {
-            // Show formatted date for older articles
             return format(date, 'MMM d, yyyy')
         }
     } catch (error) {
-        // Fallback to original string if all parsing fails
         return dateString
     }
 }
-
-// Fallback image component
-const ArticleImageFallback = ({ article, sourceGradient }: {
-    article: NewsArticle & { source: string },
-    sourceGradient: string
-}) => (
-    <div className={cn(
-        "relative aspect-[4/3] rounded-xl overflow-hidden",
-        "border border-border/30 group-hover:border-primary/30 transition-colors duration-300",
-        "bg-gradient-to-br from-muted/20 to-muted/40",
-        "flex items-center justify-center"
-    )}>
-        <div className="text-center space-y-3 p-4">
-            <div className={cn(
-                "w-12 h-12 rounded-full bg-gradient-to-r mx-auto flex items-center justify-center",
-                sourceGradient
-            )}>
-                <ImageIcon className="w-6 h-6 text-white" />
-            </div>
-            <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">
-                    {article.publisher}
-                </p>
-                <p className="text-xs text-muted-foreground/70">
-                    News Article
-                </p>
-            </div>
-        </div>
-
-        {/* Source indicator */}
-        <div className="absolute top-3 left-3">
-            <div className={cn(
-                "w-3 h-3 rounded-full bg-gradient-to-r shadow-lg",
-                sourceGradient
-            )} />
-        </div>
-    </div>
-)
 
 export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
     const { data: session } = useSession()
@@ -233,13 +179,13 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
         })
     }
 
-    const getSourceGradient = (source: string) => {
-        const gradients: Record<string, string> = {
-            'thehindu': 'from-red-500 to-pink-500',
-            'indianexpress': 'from-blue-500 to-cyan-500',
-            'economictimes': 'from-green-500 to-emerald-500'
+    const getSourceColor = (source: string) => {
+        const colors: Record<string, string> = {
+            'thehindu': 'bg-red-500',
+            'indianexpress': 'bg-blue-500',
+            'economictimes': 'bg-green-500'
         }
-        return gradients[source] || 'from-gray-500 to-slate-500'
+        return colors[source] || 'bg-gray-500'
     }
 
     const formatSourceName = (source: string) => {
@@ -255,14 +201,13 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
         return (
             <div className="flex items-center justify-center min-h-[60vh] p-8">
                 <div className={cn(
-                    "text-center glass-card max-w-md",
+                    "text-center max-w-md",
                     "animate-fade-in-up"
                 )}>
                     <div className="relative mb-6">
-                        <TrendingUp className="w-16 h-16 mx-auto text-muted-foreground animate-float" />
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-full blur-xl" />
+                        <TrendingUp className="w-16 h-16 mx-auto text-muted-foreground/50" />
                     </div>
-                    <h3 className="text-xl font-bold mb-2 text-gradient-primary">No articles found</h3>
+                    <h3 className="text-xl font-bold mb-2 text-foreground">No articles found</h3>
                     <p className="text-muted-foreground">
                         {searchQuery ? `No articles match "${searchQuery}"` : 'No articles available at the moment.'}
                     </p>
@@ -272,9 +217,9 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
     }
 
     return (
-        <div className="h-full dot-grid-bg my-12 p-6 ">
-            <div className="max-w-6xl mx-auto space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="min-h-full dot-grid-bg my-8 p-4 sm:p-6 lg:p-8">
+            <div className="max-w-7xl mx-auto space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                     {articles.map((article, index) => {
                         const isBookmarked = bookmarkedArticles.has(article.loc)
                         const isBookmarking = bookmarkingArticles.has(article.loc)
@@ -284,23 +229,19 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
                             <Card
                                 key={`${article.loc}-${index}`}
                                 className={cn(
-                                    "news-card cursor-pointer group relative overflow-hidden",
-                                    "animate-fade-in-up transition-all duration-500 ease-out",
-                                    "hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-2 hover:bg-accent/5",
-                                    "bg-card/80 backdrop-blur-sm border border-border/60 hover:border-primary/20",
-                                    "rounded-2xl p-0 h-[420px] border-b-0"
+                                    "news-card group relative flex flex-col h-full",
+                                    "cursor-pointer transition-transform duration-200 ease-out"
                                 )}
-                                style={{ animationDelay: `${index * 100}ms` }}
                                 onClick={() => handleArticleClick(article)}
                             >
-                                {/* Image Section - Top */}
-                                <div className="relative h-52 overflow-hidden rounded-t-2xl">
+                                {/* Image Section */}
+                                <div className="relative aspect-[16/10] overflow-hidden bg-muted">
                                     {article.news_image ? (
                                         <Image
                                             src={article.news_image}
                                             alt={article.news_title}
                                             fill
-                                            className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                                            className="object-cover transition-transform duration-500 group-hover:scale-105"
                                             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                                             onError={(e) => {
                                                 const target = e.target as HTMLImageElement;
@@ -308,153 +249,83 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
                                             }}
                                         />
                                     ) : (
-                                        <div className={cn(
-                                            "w-full h-full bg-gradient-to-br flex items-center justify-center",
-                                            "transition-all duration-700 ease-out group-hover:scale-110",
-                                            getSourceGradient(article.source)
-                                        )}>
-                                            <div className="text-center text-white">
-                                                <ImageIcon className="w-12 h-12 mx-auto mb-2 opacity-90" />
-                                                <p className="text-sm font-medium opacity-90">
-                                                    {formatSourceName(article.source)}
-                                                </p>
-                                            </div>
+                                        <div className="w-full h-full flex items-center justify-center bg-muted">
+                                            <ImageIcon className="w-12 h-12 text-muted-foreground/30" />
                                         </div>
                                     )}
 
-                                    {/* Source indicator */}
-                                    <div className="absolute top-3 left-3">
+                                    {/* Source Badge */}
+                                    <div className="absolute top-4 left-4">
                                         <div className={cn(
-                                            "px-2 py-1 rounded-lg text-xs font-medium text-white",
-                                            "bg-black/30 backdrop-blur-sm border border-white/20",
-                                            "transition-all duration-500 ease-out group-hover:bg-black/50 group-hover:backdrop-blur-md"
+                                            "px-3 py-1 rounded-full text-xs font-semibold text-white shadow-sm backdrop-blur-md",
+                                            getSourceColor(article.source)
                                         )}>
                                             {formatSourceName(article.source)}
                                         </div>
                                     </div>
-
-                                    {/* Floating Action Buttons */}
-                                    <div className="absolute top-3 right-3 flex gap-2">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className={cn(
-                                                "w-9 h-9 rounded-xl transition-all duration-300 ease-out",
-                                                "bg-white/10 backdrop-blur-md border border-white/20",
-                                                "hover:bg-white/20 text-white shadow-lg",
-                                                "group-hover:bg-white/15 group-hover:shadow-xl",
-                                                isBookmarked
-                                                    ? "bg-blue-500/80 hover:bg-blue-500"
-                                                    : "hover:bg-blue-500/50"
-                                            )}
-                                            onClick={(e) => handleBookmark(article, e)}
-                                            disabled={isBookmarking}
-                                        >
-                                            <BookmarkIcon className={cn(
-                                                "w-4 h-4 transition-all duration-300 ease-out",
-                                                (isBookmarked || isBookmarking) && "fill-current",
-                                                isBookmarking && "animate-pulse"
-                                            )} />
-                                        </Button>
-
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className={cn(
-                                                "w-9 h-9 rounded-xl transition-all duration-300 ease-out",
-                                                "bg-white/10 backdrop-blur-md border border-white/20",
-                                                "hover:bg-white/20 text-white shadow-lg hover:bg-green-500/50",
-                                                "group-hover:bg-white/15 group-hover:shadow-xl"
-                                            )}
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                if (navigator.share) {
-                                                    navigator.share({
-                                                        title: article.news_title,
-                                                        url: article.loc
-                                                    }).catch(() => {
-                                                        navigator.clipboard.writeText(article.loc)
-                                                    })
-                                                } else {
-                                                    navigator.clipboard.writeText(article.loc)
-                                                }
-                                                toast({
-                                                    title: "Link copied!",
-                                                    description: "Article link copied to clipboard.",
-                                                })
-                                            }}
-                                        >
-                                            <Share2 className="w-4 h-4 transition-all duration-300 ease-out" />
-                                        </Button>
-                                    </div>
                                 </div>
 
-                                {/* Content Section - Bottom */}
-                                <div className="p-5 flex flex-col justify-between h-[212px]">
-                                    <div className="space-y-3">
-                                        {/* Meta info */}
-                                        <div className="flex items-center justify-between text-xs text-muted-foreground group-hover:text-foreground/70 transition-colors duration-500 ease-out">
-                                            <div className="flex items-center gap-2">
-                                                <div className={cn(
-                                                    "w-1.5 h-1.5 rounded-full transition-all duration-500 ease-out group-hover:scale-125",
-                                                    "bg-gradient-to-r", getSourceGradient(article.source)
-                                                )} />
-                                                <span className="font-medium transition-colors duration-500 ease-out group-hover:text-primary/80">{article.publisher}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1.5">
-                                                <Clock className="w-3 h-3 transition-all duration-500 ease-out group-hover:scale-110" />
-                                                <span className="transition-colors duration-500 ease-out">{formatArticleDate(article.news_publication_date)}</span>
-                                            </div>
+                                {/* Content Section */}
+                                <div className="flex flex-col flex-1 p-5">
+                                    {/* Meta */}
+                                    <div className="flex items-center justify-between text-xs font-medium text-muted-foreground mb-3">
+                                        <span>{article.publisher}</span>
+                                        <div className="flex items-center gap-1">
+                                            <Clock className="w-3 h-3" />
+                                            <span>{formatArticleDate(article.news_publication_date)}</span>
                                         </div>
-
-                                        {/* Title */}
-                                        <h3 className={cn(
-                                            "text-lg font-bold leading-tight line-clamp-3",
-                                            "text-foreground group-hover:text-primary",
-                                            "transition-colors duration-500 ease-out"
-                                        )}>
-                                            {article.news_title}
-                                        </h3>
                                     </div>
 
-                                    {/* Actions */}
-                                    <div className="flex items-center justify-between pt-3 border-t border-border/40 group-hover:border-primary/30 transition-colors duration-500 ease-out">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className={cn(
-                                                "h-8 px-3 rounded-lg text-xs font-medium",
-                                                "transition-all duration-500 ease-out",
-                                                "group-hover:shadow-md group-hover:scale-105",
-                                                isLiked
-                                                    ? "text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-950 dark:hover:bg-red-900"
-                                                    : "text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                                            )}
-                                            onClick={(e) => handleLike(article, e)}
-                                        >
-                                            <Heart className={cn(
-                                                "w-3.5 h-3.5 mr-1 transition-all duration-500 ease-out",
-                                                "group-hover:scale-110",
-                                                isLiked && "fill-current"
-                                            )} />
-                                            Like
-                                        </Button>
+                                    {/* Title */}
+                                    <h3 className="text-lg font-bold leading-snug text-foreground mb-3 line-clamp-3 group-hover:text-primary transition-colors">
+                                        {article.news_title}
+                                    </h3>
+
+                                    <div className="mt-auto pt-4 flex items-center justify-between border-t border-border/50">
+                                        <div className="flex gap-2">
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className={cn(
+                                                    "h-8 w-8 rounded-full",
+                                                    isLiked && "text-red-500 bg-red-50 dark:bg-red-950/30"
+                                                )}
+                                                onClick={(e) => handleLike(article, e)}
+                                            >
+                                                <Heart className={cn("w-4 h-4", isLiked && "fill-current")} />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className={cn(
+                                                    "h-8 w-8 rounded-full",
+                                                    isBookmarked && "text-blue-500 bg-blue-50 dark:bg-blue-950/30"
+                                                )}
+                                                onClick={(e) => handleBookmark(article, e)}
+                                                disabled={isBookmarking}
+                                            >
+                                                <BookmarkIcon className={cn("w-4 h-4", isBookmarked && "fill-current")} />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8 rounded-full"
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    navigator.clipboard.writeText(article.loc)
+                                                    toast({ title: "Link copied!" })
+                                                }}
+                                            >
+                                                <Share2 className="w-4 h-4" />
+                                            </Button>
+                                        </div>
 
                                         <Button
+                                            variant="default"
                                             size="sm"
-                                            className={cn(
-                                                "h-8 px-3 rounded-lg text-xs font-medium",
-                                                "bg-primary text-primary-foreground",
-                                                "hover:bg-primary/90 transition-all duration-500 ease-out",
-                                                "shadow-sm hover:shadow-lg group-hover:shadow-xl group-hover:scale-105"
-                                            )}
-                                            onClick={(e) => {
-                                                e.stopPropagation()
-                                                handleArticleClick(article)
-                                            }}
+                                            className="text-xs font-semibold rounded-lg h-8 px-4"
                                         >
-                                            Read
-                                            <ExternalLink className="w-3 h-3 ml-1 transition-all duration-500 ease-out group-hover:scale-110" />
+                                            Read More <ExternalLink className="w-3 h-3 ml-1" />
                                         </Button>
                                     </div>
                                 </div>
@@ -465,4 +336,4 @@ export function NewsFeed({ articles, searchQuery }: NewsFeedProps) {
             </div>
         </div>
     )
-} 
+}
